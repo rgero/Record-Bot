@@ -3,6 +3,7 @@ import "dotenv/config";
 import { Client, GatewayIntentBits } from "discord.js";
 
 import { ProcessAdd } from "./discord/ProcessAdd.js";
+import { ProcessPlay } from "./discord/ProcessPlay.js";
 
 const client = new Client({
   intents: [
@@ -24,6 +25,13 @@ client.on("messageCreate", async (message) => {
   {
     ProcessAdd(message);
   }
+
+  if (targetMessage.toLocaleLowerCase().startsWith("!play "))
+  {
+    ProcessPlay(message);
+  }
+
+
 });
 
 // Log in to Discord

@@ -18,7 +18,7 @@ export const ProcessAdd = async (message) => {
 
     // Create Discord embed
     const embed = new EmbedBuilder()
-      .setTitle(albumName)
+      .setTitle(`Added: ${albumName}`)
       .setDescription(artists)
       .setColor(0x1db954) // Spotify green
       .setThumbnail(albumArt)
