@@ -4,6 +4,7 @@ import { Client, GatewayIntentBits } from "discord.js";
 
 import { ProcessAdd } from "./discord/ProcessAdd.js";
 import { ProcessPlay } from "./discord/ProcessPlay.js";
+import { ProcessRandom } from "./discord/ProcessRandom.js";
 
 const client = new Client({
   intents: [
@@ -24,13 +25,19 @@ client.on("messageCreate", async (message) => {
   if (targetMessage.toLocaleLowerCase().startsWith("!add "))
   {
     ProcessAdd(message);
+    return;
   }
 
   if (targetMessage.toLocaleLowerCase().startsWith("!play "))
   {
     ProcessPlay(message);
+    return;
   }
 
+  if (targetMessage.startsWith("!random")) {
+    ProcessRandom(message);
+    return;
+  }
 
 });
 
