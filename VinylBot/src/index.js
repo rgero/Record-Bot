@@ -2,9 +2,9 @@ import "dotenv/config";
 
 import { Client, GatewayIntentBits } from "discord.js";
 
-import { ProcessAdd } from "./discord/ProcessAdd.js";
 import { ProcessPlay } from "./discord/ProcessPlay.js";
 import { ProcessRandom } from "./discord/ProcessRandom.js";
+import { ProcessWant } from "./discord/ProcessWant.js";
 
 const client = new Client({
   intents: [
@@ -22,9 +22,9 @@ client.on("messageCreate", async (message) => {
   if (message.author.bot) return; // Ignore bot messages
 
   const targetMessage = message.content;
-  if (targetMessage.toLocaleLowerCase().startsWith("!add "))
+  if (targetMessage.toLocaleLowerCase().startsWith("!want "))
   {
-    ProcessAdd(message);
+    ProcessWant(message);
     return;
   }
 

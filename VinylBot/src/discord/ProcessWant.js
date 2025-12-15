@@ -4,7 +4,7 @@ import { getDropdownValue } from "../utils/discordToDropdown.js";
 import { parseSpotifyUrl } from "../spotify/parseSpotifyUrl.js";
 import { spotifyGet } from "../spotify/spotify.js";
 
-export const ProcessAdd = async (message) => {
+export const ProcessWant = async (message) => {
     const parsed = parseSpotifyUrl(message.content);
   if (!parsed) return; // Not a Spotify URL
 
