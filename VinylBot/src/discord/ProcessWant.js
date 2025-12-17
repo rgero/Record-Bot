@@ -8,6 +8,8 @@ export const ProcessWant = async (message) => {
   const parsed = parseSpotifyUrl(message.content);
   if (!parsed) return;
 
+  const notes = message.content.slice(parsed.index + parsed.length).trim();
+
   try {
     const data = await spotifyGet(`${parsed.type}s/${parsed.id}`);
 
@@ -18,7 +20,7 @@ export const ProcessWant = async (message) => {
     const requester = message.author?.username || "Unknown";
     const mappedRequester = getDropdownValue(requester);
 
-    const added = await appendAlbumToSheet(artists, albumName, albumArt, mappedRequester);
+    const added = await appendAlbumToSheet(artists, albumName, albumArt, mappedRequester, notes);
 
     const embed = new EmbedBuilder()
       .setTitle(added ? `✅ Added: ${albumName}` : `⚠️ Already on the list`)
@@ -30,6 +32,7 @@ export const ProcessWant = async (message) => {
         { name: "Release Date", value: data.release_date || "N/A", inline: true },
         { name: "Tracks", value: `${data.total_tracks || "N/A"}`, inline: true },
         { name: "Requested By", value: mappedRequester, inline: true }
+        { name: "Notes", value: notes, inline: true }
       );
 
     message.reply({ embeds: [embed] });

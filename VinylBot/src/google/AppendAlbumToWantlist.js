@@ -9,7 +9,7 @@ const auth = new google.auth.GoogleAuth({
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
-export async function appendAlbumToSheet(artist, album, imageUrl, requester, sheetName = "Searching For") {
+export async function appendAlbumToSheet(artist, album, imageUrl, requester, notes = "", sheetName = "Searching For") {
   const client = await auth.getClient();
   const sheets = google.sheets({ version: "v4", auth: client });
 
@@ -36,10 +36,10 @@ export async function appendAlbumToSheet(artist, album, imageUrl, requester, she
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: `'${sheetName}'!A:D`,
+    range: `'${sheetName}'!A:E`,
     valueInputOption: "USER_ENTERED",
     resource: {
-      values: [[artist, album, imageFormula, requester]],
+      values: [[artist, album, imageFormula, requester, notes]],
     },
   });
 

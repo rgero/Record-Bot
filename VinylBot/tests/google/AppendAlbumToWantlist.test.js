@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { appendAlbumToSheet } from "../../src/google/AppendAlbumtoWantlist";
+import { appendAlbumToSheet } from "../../src/google/AppendAlbumToWantlist";
 
 vi.mock("fs", () => ({
   default: {
@@ -81,6 +81,48 @@ describe("appendAlbumToSheet", () => {
             "From Mars to Sirius",
             '=IMAGE("http://image.jpg")',
             "Roy",
+            ""
+          ]],
+        },
+      })
+    );
+  });
+
+  it("appends a new album when not a duplicate and has note", async () => {
+    sheetsGetMock.mockResolvedValueOnce({
+      data: {
+        sheets: [{ properties: { title: "Searching For" } }],
+      },
+    });
+
+    valuesGetMock.mockResolvedValueOnce({
+      data: {
+        values: [
+          ["Artist", "Album"],
+          ["Other Artist", "Other Album"],
+        ],
+      },
+    });
+
+    const result = await appendAlbumToSheet(
+      "Gojira",
+      "From Mars to Sirius",
+      "http://image.jpg",
+      "Roy",
+      "Pizza is lovely"
+    );
+
+    expect(result).toBe(true);
+    expect(appendMock).toHaveBeenCalledOnce();
+    expect(appendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resource: {
+          values: [[
+            "Gojira",
+            "From Mars to Sirius",
+            '=IMAGE("http://image.jpg")',
+            "Roy",
+            "Pizza is lovely"
           ]],
         },
       })
