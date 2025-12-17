@@ -1,5 +1,5 @@
 import { EmbedBuilder } from "discord.js";
-import { appendAlbumToSheet } from "../google/AppendAlbumtoWantlist.js";
+import { appendAlbumToSheet } from "../google/AppendAlbumToWantlist.js";
 import { getDropdownValue } from "../utils/discordToDropdown.js";
 import { parseSpotifyUrl } from "../spotify/parseSpotifyUrl.js";
 import { spotifyGet } from "../spotify/spotify.js";
