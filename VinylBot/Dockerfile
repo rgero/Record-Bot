@@ -16,8 +16,5 @@ COPY src ./src
 # Copy service account separately
 COPY service-account.json ./service-account.json
 
-# Expose port if needed (not required for Discord bot)
-EXPOSE 3000
-
 # Run the bot from src/index.js
 CMD ["node", "src/index.js"]
