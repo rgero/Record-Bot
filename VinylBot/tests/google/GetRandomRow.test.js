@@ -1,5 +1,6 @@
-import {appendAlbumToSheet, getRandomRow} from "../../src/google/sheets.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { getRandomRow } from "../../src/google/GetRandomRow";
 
 vi.mock("fs", () => ({
   default: {
@@ -35,91 +36,6 @@ vi.mock("googleapis", () => {
       })),
     },
   };
-});
-
-describe("appendAlbumToSheet", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    process.env.SPREADSHEET_ID = "test-sheet-id";
-  });
-
-  it("appends a new album when not a duplicate", async () => {
-    sheetsGetMock.mockResolvedValueOnce({
-      data: {
-        sheets: [{ properties: { title: "Searching For" } }],
-      },
-    });
-
-    valuesGetMock.mockResolvedValueOnce({
-      data: {
-        values: [
-          ["Artist", "Album"],
-          ["Other Artist", "Other Album"],
-        ],
-      },
-    });
-
-    const result = await appendAlbumToSheet(
-      "Gojira",
-      "From Mars to Sirius",
-      "http://image.jpg",
-      "Roy"
-    );
-
-    expect(result).toBe(true);
-    expect(appendMock).toHaveBeenCalledOnce();
-    expect(appendMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        resource: {
-          values: [[
-            "Gojira",
-            "From Mars to Sirius",
-            '=IMAGE("http://image.jpg")',
-            "Roy",
-          ]],
-        },
-      })
-    );
-  });
-
-  it("returns false when album already exists", async () => {
-    sheetsGetMock.mockResolvedValueOnce({
-      data: {
-        sheets: [{ properties: { title: "Searching For" } }],
-      },
-    });
-
-    valuesGetMock.mockResolvedValueOnce({
-      data: {
-        values: [
-          ["Artist", "Album"],
-          ["Gojira", "From Mars to Sirius"],
-        ],
-      },
-    });
-
-    const result = await appendAlbumToSheet(
-      "Gojira",
-      "From Mars to Sirius",
-      null,
-      "Roy"
-    );
-
-    expect(result).toBe(false);
-    expect(appendMock).not.toHaveBeenCalled();
-  });
-
-  it("throws if sheet does not exist", async () => {
-    sheetsGetMock.mockResolvedValueOnce({
-      data: {
-        sheets: [{ properties: { title: "Other Sheet" } }],
-      },
-    });
-
-    await expect(
-      appendAlbumToSheet("A", "B", null, "Roy")
-    ).rejects.toThrow('Sheet/tab "Searching For" not found.');
-  });
 });
 
 describe("getRandomRow", () => {

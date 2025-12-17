@@ -1,7 +1,7 @@
-import { getRandomRow } from "../google/sheets.js";
+import { getRandomRow } from "../google/GetRandomRow.js";
 
 export const ProcessRandom = async (message) => {
-      const args = message.content.split(" ").slice(1);
+    const args = message.content.split(" ").slice(1);
     const param = args[0]?.toLowerCase();
 
     try {
