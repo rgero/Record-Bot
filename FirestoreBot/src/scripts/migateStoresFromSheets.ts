@@ -53,28 +53,24 @@ async function migrateStores(): Promise<void> {
   let migrated = 0;
 
   for (const row of rows) {
-    const [name, address, recommendedRaw, notes] = row;
+    const [name, address, recommendedRaw, totalPurchased, notes] = row;
 
-    if (!name || !address) {
+    if (!name) {
       console.warn("Skipping invalid row:", row);
       continue;
     }
 
-    const recommended =
-      String(recommendedRaw).toLowerCase() === "true" ||
-      String(recommendedRaw).toLowerCase() === "yes";
+    const recommended = String(recommendedRaw).toLowerCase() === "true" || String(recommendedRaw).toLowerCase() === "yes";
 
-    const storeId = name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-");
+    const storeId = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
     await db.collection("stores").doc(storeId).set(
       {
         name,
-        address,
-        recommended,
+        address: address || "",
+        recommended: recommended || false,
         purchaseCount: 0,
-        notes: notes || undefined,
+        notes: notes || "",
       },
       { merge: true }
     );
