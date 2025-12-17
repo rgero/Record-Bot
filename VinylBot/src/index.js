@@ -5,7 +5,7 @@ import { Client, GatewayIntentBits } from "discord.js";
 import { ProcessPlay } from "./discord/ProcessPlay.js";
 import { ProcessRandom } from "./discord/ProcessRandom.js";
 import { ProcessWant } from "./discord/ProcessWant.js";
-import { ProcessWantList } from "./discord/ProcessList.js";
+import { ProcessWantList } from "./discord/ProcessWantlist.js";
 
 const client = new Client({
   intents: [
