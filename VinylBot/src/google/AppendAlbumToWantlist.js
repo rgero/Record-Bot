@@ -9,12 +9,6 @@ const auth = new google.auth.GoogleAuth({
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
-/**
- * Append album data to the sheet with requester
- * Prevents duplicates (Artist + Album)
- *
- * @returns {boolean} true if appended, false if already exists
- */
 export async function appendAlbumToSheet(artist, album, imageUrl, requester, sheetName = "Searching For") {
   const client = await auth.getClient();
   const sheets = google.sheets({ version: "v4", auth: client });
