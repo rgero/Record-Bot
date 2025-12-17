@@ -15,6 +15,7 @@ COPY src ./src
 
 # Copy service account separately
 COPY service-account.json ./service-account.json
+COPY discordMapping.json ./discordMapping.json
 
 # Run the bot from src/index.js
 CMD ["node", "src/index.js"]
