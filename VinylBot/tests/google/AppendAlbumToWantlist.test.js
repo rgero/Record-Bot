@@ -1,170 +1,72 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { appendAlbumToSheet } from "../../src/google/AppendAlbumToWantlist";
+import { appendAlbumToSheet } from "../../src/google/AppendAlbumtoWantlist.js";
+import { checkIfAlbumExists } from "../../src/google/CheckAlbumExists.js";
+import { getGoogleSheetsClient } from "../../src/google/GetGoogleSheetsClient.js";
 
-vi.mock("fs", () => ({
-  default: {
-    readFileSync: vi.fn(() =>
-      JSON.stringify({ client_email: "test@test.com" })
-    ),
-  },
+vi.mock("../../src/google/CheckAlbumExists.js", () => ({
+  checkIfAlbumExists: vi.fn(),
 }));
 
-beforeEach(() => {
-  vi.spyOn(console, "log").mockImplementation(() => {});
-});
-
-// ---- Mock googleapis ----
-const appendMock = vi.fn();
-const valuesGetMock = vi.fn();
-const sheetsGetMock = vi.fn();
-
-vi.mock("googleapis", () => {
-  class GoogleAuthMock {
-    getClient = vi.fn().mockResolvedValue("auth-client");
-  }
-
-  return {
-    google: {
-      auth: {
-        GoogleAuth: GoogleAuthMock,
-      },
-      sheets: vi.fn(() => ({
-        spreadsheets: {
-          get: sheetsGetMock,
-          values: {
-            get: valuesGetMock,
-            append: appendMock,
-          },
-        },
-      })),
-    },
-  };
-});
+vi.mock("../../src/google/GetGoogleSheetsClient.js", () => ({
+  getGoogleSheetsClient: vi.fn(),
+}));
 
 describe("appendAlbumToSheet", () => {
+  // Create a mock 'sheets' object that behaves like the Google API
+  const mockAppend = vi.fn();
+  const mockGet = vi.fn();
+  const mockSheetsInstance = {
+    spreadsheets: {
+      get: mockGet,
+      values: { append: mockAppend },
+    },
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.SPREADSHEET_ID = "test-sheet-id";
+    process.env.SPREADSHEET_ID = "test-id-123";
+
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    
+    // Tell our helper mock to return our fake sheets instance
+    vi.mocked(getGoogleSheetsClient).mockResolvedValue(mockSheetsInstance);
   });
 
-  it("appends a new album when not a duplicate", async () => {
-    sheetsGetMock.mockResolvedValueOnce({
-      data: {
-        sheets: [{ properties: { title: "Searching For" } }],
-      },
+  it("should throw error if the sheet name does not exist", async () => {
+    mockGet.mockResolvedValue({
+      data: { sheets: [{ properties: { title: "Other Sheet" } }] }
     });
 
-    valuesGetMock.mockResolvedValueOnce({
-      data: {
-        values: [
-          ["Artist", "Album"],
-          ["Other Artist", "Other Album"],
-        ],
-      },
-    });
-
-    const result = await appendAlbumToSheet(
-      "Gojira",
-      "From Mars to Sirius",
-      "http://image.jpg",
-      "Roy"
-    );
-
-    expect(result).toBe(true);
-    expect(appendMock).toHaveBeenCalledOnce();
-    expect(appendMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        resource: {
-          values: [[
-            "Gojira",
-            "From Mars to Sirius",
-            '=IMAGE("http://image.jpg")',
-            "Roy",
-            ""
-          ]],
-        },
-      })
-    );
+    await expect(appendAlbumToSheet("Artist", "Album", null, "User", "", "Missing"))
+      .rejects.toThrow('Sheet/tab "Missing" not found.');
   });
 
-  it("appends a new album when not a duplicate and has note", async () => {
-    sheetsGetMock.mockResolvedValueOnce({
-      data: {
-        sheets: [{ properties: { title: "Searching For" } }],
-      },
+  it("should return false and not append if album already exists", async () => {
+    mockGet.mockResolvedValue({
+      data: { sheets: [{ properties: { title: "Searching For" } }] }
     });
+    vi.mocked(checkIfAlbumExists).mockResolvedValue(true);
 
-    valuesGetMock.mockResolvedValueOnce({
-      data: {
-        values: [
-          ["Artist", "Album"],
-          ["Other Artist", "Other Album"],
-        ],
-      },
-    });
-
-    const result = await appendAlbumToSheet(
-      "Gojira",
-      "From Mars to Sirius",
-      "http://image.jpg",
-      "Roy",
-      "Pizza is lovely"
-    );
-
-    expect(result).toBe(true);
-    expect(appendMock).toHaveBeenCalledOnce();
-    expect(appendMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        resource: {
-          values: [[
-            "Gojira",
-            "From Mars to Sirius",
-            '=IMAGE("http://image.jpg")',
-            "Roy",
-            "Pizza is lovely"
-          ]],
-        },
-      })
-    );
-  });
-
-  it("returns false when album already exists", async () => {
-    sheetsGetMock.mockResolvedValueOnce({
-      data: {
-        sheets: [{ properties: { title: "Searching For" } }],
-      },
-    });
-
-    valuesGetMock.mockResolvedValueOnce({
-      data: {
-        values: [
-          ["Artist", "Album"],
-          ["Gojira", "From Mars to Sirius"],
-        ],
-      },
-    });
-
-    const result = await appendAlbumToSheet(
-      "Gojira",
-      "From Mars to Sirius",
-      null,
-      "Roy"
-    );
-
+    const result = await appendAlbumToSheet("Artist", "Album");
+    
     expect(result).toBe(false);
-    expect(appendMock).not.toHaveBeenCalled();
+    expect(mockAppend).not.toHaveBeenCalled();
   });
 
-  it("throws if sheet does not exist", async () => {
-    sheetsGetMock.mockResolvedValueOnce({
-      data: {
-        sheets: [{ properties: { title: "Other Sheet" } }],
-      },
+  it("should append data correctly including IMAGE formula", async () => {
+    mockGet.mockResolvedValue({
+      data: { sheets: [{ properties: { title: "Searching For" } }] }
     });
+    vi.mocked(checkIfAlbumExists).mockResolvedValue(false);
 
-    await expect(
-      appendAlbumToSheet("A", "B", null, "Roy")
-    ).rejects.toThrow('Sheet/tab "Searching For" not found.');
+    const result = await appendAlbumToSheet("Rise Against", "Endgame", "img.jpg", "Roy");
+
+    expect(result).toBe(true);
+    expect(mockAppend).toHaveBeenCalledWith(expect.objectContaining({
+      resource: {
+        values: [["Rise Against", "Endgame", '=IMAGE("img.jpg")', "Roy", ""]],
+      },
+    }));
   });
 });

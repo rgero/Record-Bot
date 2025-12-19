@@ -1,4 +1,4 @@
-export function parseSpotifyUrl(text) {
+export const parseSpotifyUrl = (text) => {
   const match = text.match(
     /open\.spotify\.com\/(album|track|artist)\/([a-zA-Z0-9]+)/
   );

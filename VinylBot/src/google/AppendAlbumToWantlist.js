@@ -1,17 +1,8 @@
 import { checkIfAlbumExists } from "./CheckAlbumExists.js";
-import fs from "fs";
-import { google } from "googleapis";
+import { getGoogleSheetsClient } from "./GetGoogleSheetsClient.js";
 
-const credentials = JSON.parse(fs.readFileSync("./service-account.json"));
-
-const auth = new google.auth.GoogleAuth({
-  credentials,
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-});
-
-export async function appendAlbumToSheet(artist, album, imageUrl, requester, notes = "", sheetName = "Searching For") {
-  const client = await auth.getClient();
-  const sheets = google.sheets({ version: "v4", auth: client });
+export const appendAlbumToSheet = async (artist, album, imageUrl, requester, notes = "", sheetName = "Searching For") => {
+  const sheets = await getGoogleSheetsClient();
 
   const spreadsheetId = process.env.SPREADSHEET_ID;
   if (!spreadsheetId) throw new Error("SPREADSHEET_ID is not set in .env");
@@ -46,7 +37,3 @@ export async function appendAlbumToSheet(artist, album, imageUrl, requester, not
   console.log(`✅ Appended album "${album}" by "${artist}"`);
   return true;
 }
-
-
-
-

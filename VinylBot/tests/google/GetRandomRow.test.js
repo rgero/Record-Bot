@@ -1,97 +1,68 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { getData } from "../../src/google/GetData";
 import { getRandomRow } from "../../src/google/GetRandomRow";
 
-vi.mock("fs", () => ({
-  default: {
-    readFileSync: vi.fn(() =>
-      JSON.stringify({ client_email: "test@test.com" })
-    ),
-  },
+vi.mock("../../src/google/GetData", () => ({
+  getData: vi.fn(),
 }));
 
-// ---- Mock googleapis ----
-const appendMock = vi.fn();
-const valuesGetMock = vi.fn();
-const sheetsGetMock = vi.fn();
-
-vi.mock("googleapis", () => {
-  class GoogleAuthMock {
-    getClient = vi.fn().mockResolvedValue("auth-client");
-  }
-
-  return {
-    google: {
-      auth: {
-        GoogleAuth: GoogleAuthMock,
-      },
-      sheets: vi.fn(() => ({
-        spreadsheets: {
-          get: sheetsGetMock,
-          values: {
-            get: valuesGetMock,
-            append: appendMock,
-          },
-        },
-      })),
-    },
-  };
-});
-
 describe("getRandomRow", () => {
+  const mockData = [
+    ["Apple", "Red"],
+    ["Banana", "Yellow"],
+    ["Cherry", "Red"],
+  ];
+
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.SPREADSHEET_ID = "test-sheet-id";
+    vi.spyOn(console, "log").mockImplementation(() => {});
   });
 
-  it("returns null if sheet has no data rows", async () => {
-    valuesGetMock.mockResolvedValueOnce({
-      data: {
-        values: [["Artist", "Album"]],
-      },
-    });
-
-    const row = await getRandomRow({ sheetName: "Searching For" });
-    expect(row).toBeNull();
+  it("should return null if no data is returned", async () => {
+    vi.mocked(getData).mockResolvedValue([]);
+    
+    const result = await getRandomRow({});
+    expect(result).toBeNull();
   });
 
-  it("returns a random row", async () => {
-    vi.spyOn(Math, "random").mockReturnValue(0);
+  it("should return a random row when no filters are applied", async () => {
+    vi.mocked(getData).mockResolvedValue(mockData);
+    
+    // Mock Math.random to always pick the second item (Banana)
+    // index = floor(0.5 * 3) = 1
+    const spy = vi.spyOn(Math, 'random').mockReturnValue(0.5);
 
-    valuesGetMock.mockResolvedValueOnce({
-      data: {
-        values: [
-          ["Artist", "Album"],
-          ["Gojira", "Magma"],
-          ["Opeth", "Ghost Reveries"],
-        ],
-      },
-    });
-
-    const row = await getRandomRow({ sheetName: "Searching For" });
-
-    expect(row).toEqual(["Gojira", "Magma"]);
+    const result = await getRandomRow({});
+    
+    expect(result).toEqual(["Banana", "Yellow"]);
+    spy.mockRestore();
   });
 
-  it("filters rows before picking random", async () => {
-    vi.spyOn(Math, "random").mockReturnValue(0);
+  it("should filter rows based on column index and value", async () => {
+    vi.mocked(getData).mockResolvedValue(mockData);
 
-    valuesGetMock.mockResolvedValueOnce({
-      data: {
-        values: [
-          ["Artist", "Album"],
-          ["Gojira", "Magma"],
-          ["Opeth", "Ghost Reveries"],
-        ],
-      },
-    });
+    // Filter for "Red" in the second column (index 1)
+    // Should filter down to [["Apple", "Red"], ["Cherry", "Red"]]
+    const result = await getRandomRow({ filterColumnIndex: 1, filterValue: "Red" });
 
-    const row = await getRandomRow({
-      sheetName: "Searching For",
-      filterColumnIndex: 0,
-      filterValue: "opeth",
-    });
+    expect(result).not.toContain("Banana");
+    expect(result[1]).toBe("Red");
+  });
 
-    expect(row).toEqual(["Opeth", "Ghost Reveries"]);
+  it("should be case-insensitive when filtering", async () => {
+    vi.mocked(getData).mockResolvedValue(mockData);
+
+    const result = await getRandomRow({ filterColumnIndex: 0, filterValue: "APPLE" });
+
+    expect(result).toEqual(["Apple", "Red"]);
+  });
+
+  it("should return null if filters result in zero matches", async () => {
+    vi.mocked(getData).mockResolvedValue(mockData);
+
+    const result = await getRandomRow({ filterColumnIndex: 0, filterValue: "Grape" });
+
+    expect(result).toBeNull();
   });
 });

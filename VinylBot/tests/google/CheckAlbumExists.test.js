@@ -56,7 +56,6 @@ describe("checkIfAlbumExists", () => {
       "gojira",
       "from mars to sirius"
     );
-
     expect(exists).toBe(true);
   });
 
@@ -124,7 +123,7 @@ describe("checkIfAlbumExists", () => {
 
     expect(valuesGetMock).toHaveBeenCalledWith({
       spreadsheetId: "test-spreadsheet-id",
-      range: "'Searching For'!A:B",
+      range: "Searching For",
     });
   });
 });

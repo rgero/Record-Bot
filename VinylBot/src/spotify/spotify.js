@@ -3,7 +3,7 @@ import axios from "axios";
 let accessToken = null;
 let tokenExpiresAt = 0;
 
-async function getAccessToken() {
+const getAccessToken = async () => {
   if (accessToken && Date.now() < tokenExpiresAt) {
     return accessToken;
   }
@@ -29,7 +29,7 @@ async function getAccessToken() {
   return accessToken;
 }
 
-export async function spotifyGet(endpoint) {
+export const spotifyGet = async (endpoint) => {
   const token = await getAccessToken();
 
   const res = await axios.get(
