@@ -1,9 +1,9 @@
 import { EmbedBuilder } from "discord.js";
-import { appendAlbumToSheet } from "../google/AppendAlbumToWantlist.js";
+import { appendAlbumToSheet } from "../google/AppendAlbumtoWantlist.js";
 import { escapeColons } from "../utils/escapeColons.js";
 import { getDropdownValue } from "../utils/discordToDropdown.js";
+import { getSpotifyData } from "../spotify/getSpotifyData.js";
 import { parseSpotifyUrl } from "../spotify/parseSpotifyUrl.js";
-import { spotifyGet } from "../spotify/spotify.js";
 
 export const ProcessWant = async (message) => {
   const args = message.content.split(" ").slice(1).join(" ").trim();
@@ -13,12 +13,7 @@ export const ProcessWant = async (message) => {
   const parsed = parseSpotifyUrl(spotifyLink);
   if (!parsed) return;
   try {
-    const data = await spotifyGet(`${parsed.type}s/${parsed.id}`);
-
-    const artists = data.artists?.map(a => a.name).join(", ") || "";
-    const albumName = data.name || "";
-    const albumArt = data.images?.[0]?.url || "";
-    
+    const {artists, albumName, albumArt, releaseDate, totalTracks} = await getSpotifyData(parsed);
     const requester = message.author?.username || "Unknown";
     const mappedRequester = getDropdownValue(requester);
 
@@ -31,8 +26,8 @@ export const ProcessWant = async (message) => {
       .setThumbnail(albumArt)
       .setURL(`https://open.spotify.com/${parsed.type}/${parsed.id}`)
       .addFields(
-        { name: "Release Date", value: data.release_date || "N/A", inline: true },
-        { name: "Tracks", value: `${data.total_tracks || "N/A"}`, inline: true },
+        { name: "Release Date", value: releaseDate || "N/A", inline: true },
+        { name: "Tracks", value: `${totalTracks || "N/A"}`, inline: true },
         { name: "Requested By", value: mappedRequester, inline: true },
         { name: "Notes", value: notes, inline: true }
       );
