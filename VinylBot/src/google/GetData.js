@@ -4,8 +4,6 @@ export const getData = async (sheetName = process.env.ALBUM_SHEET_NAME) => {
   const sheets = await getGoogleSheetsClient();
   const spreadsheetId = process.env.SPREADSHEET_ID;
 
-  // Should I move the check for sheet existence here?
-
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId,
     range: sheetName,

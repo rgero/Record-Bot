@@ -11,6 +11,18 @@ export const getRandomRow = async ({sheetName = null, filterColumnIndex = null, 
     );
   }
 
+  if (sheetName === null || sheetName === process.env.ALBUM_SHEET_NAME)
+  {
+    dataRows = dataRows.filter(
+      (row) => row[2] != ""
+    )
+  } else if (sheetName === process.env.LOCATIONS_SHEET_NAME)
+  {
+    dataRows = dataRows.filter(
+      (row) => row[1] != ""
+    )
+  }
+
   if (dataRows.length === 0) return null;
 
   // Pick random row
