@@ -13,60 +13,71 @@ vi.mock("../../src/google/GetGoogleSheetsClient.js", () => ({
 }));
 
 describe("appendAlbumToSheet", () => {
-  // Create a mock 'sheets' object that behaves like the Google API
   const mockAppend = vi.fn();
-  const mockGet = vi.fn();
   const mockSheetsInstance = {
     spreadsheets: {
-      get: mockGet,
-      values: { append: mockAppend },
+      values: { 
+        append: mockAppend 
+      },
     },
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAppend.mockResolvedValue({ status: 200 });
+
     process.env.SPREADSHEET_ID = "test-id-123";
+    process.env.WANT_LIST_SHEET_NAME = "testing-search";
 
     vi.spyOn(console, "log").mockImplementation(() => {});
-    
-    // Tell our helper mock to return our fake sheets instance
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
     vi.mocked(getGoogleSheetsClient).mockResolvedValue(mockSheetsInstance);
   });
 
-  it("should throw error if the sheet name does not exist", async () => {
-    mockGet.mockResolvedValue({
-      data: { sheets: [{ properties: { title: "Other Sheet" } }] }
-    });
+  it("should return false (gracefully handle error) if Google API fails", async () => {
+    // Simulate an API error (e.g., sheet name not found or permission denied)
+    mockAppend.mockRejectedValue(new Error("Unable to parse range"));
+    vi.mocked(checkIfAlbumExists).mockResolvedValue(false);
 
-    await expect(appendAlbumToSheet("Artist", "Album", null, "User", "", "Missing"))
-      .rejects.toThrow('Sheet/tab "Missing" not found.');
+    const result = await appendAlbumToSheet("Artist", "Album", null, "User", "", "Missing");
+
+    expect(result).toBe(false);
+    // Verifies the catch block caught the error
+    expect(console.log).toHaveBeenCalled(); 
   });
 
   it("should return false and not append if album already exists", async () => {
-    mockGet.mockResolvedValue({
-      data: { sheets: [{ properties: { title: "Searching For" } }] }
-    });
     vi.mocked(checkIfAlbumExists).mockResolvedValue(true);
 
-    const result = await appendAlbumToSheet("Artist", "Album");
-    
+    const result = await appendAlbumToSheet("Artist", "Album", "img.jpg", "User");
+
     expect(result).toBe(false);
     expect(mockAppend).not.toHaveBeenCalled();
   });
 
   it("should append data correctly including IMAGE formula", async () => {
-    mockGet.mockResolvedValue({
-      data: { sheets: [{ properties: { title: "Searching For" } }] }
-    });
     vi.mocked(checkIfAlbumExists).mockResolvedValue(false);
 
     const result = await appendAlbumToSheet("Rise Against", "Endgame", "img.jpg", "Roy");
 
     expect(result).toBe(true);
-    expect(mockAppend).toHaveBeenCalledWith(expect.objectContaining({
-      resource: {
-        values: [["Rise Against", "Endgame", '=IMAGE("img.jpg")', "Roy", ""]],
-      },
-    }));
+    expect(mockAppend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        spreadsheetId: "test-id-123",
+        range: "'testing-search'!A:E",
+        valueInputOption: "USER_ENTERED",
+        resource: {
+          values: [["Rise Against", "Endgame", '=IMAGE("img.jpg")', "Roy", ""]],
+        },
+      })
+    );
+  });
+
+  it("should throw error if SPREADSHEET_ID is missing", async () => {
+    delete process.env.SPREADSHEET_ID;
+
+    await expect(appendAlbumToSheet("Artist", "Album"))
+      .rejects.toThrow("SPREADSHEET_ID is not set in .env");
   });
 });

@@ -43,12 +43,12 @@ export const ProcessRandom = async (message) => {
   const param = args[0]?.toLowerCase();
   const isStore = param === "store";
 
-  let sheetName = "Vinyls";
+  let sheetName = process.env.ALBUM_SHEET_NAME;
   let filterColumnIndex = null;
   let filterValue = null;
 
   if (isStore) {
-    sheetName = "Location Info";
+    sheetName = process.env.LOCATIONS_SHEET_NAME;
   } else if (param) {
     filterColumnIndex = 9; // column J
     filterValue = param;
