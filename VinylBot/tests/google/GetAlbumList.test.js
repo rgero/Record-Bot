@@ -6,8 +6,8 @@ import { getData } from "../../src/google/GetData.js";
 vi.mock("../../src/google/GetData.js", () => ({ getData: vi.fn() }));
 
 describe("getAlbumList", () => {
-  const mockWantData = [["Artist A", "Album 1", "", "UserWant"]];
-  const mockHaveData = [["Artist B", "Album 2", "", "", "", "UserHave"]];
+  const mockWantData = [[1, "Artist A", "Album 1", "", "UserWant"]];
+  const mockHaveData = [[1, "Artist B", "Album 2", "", "", "", "UserHave"]];
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -22,23 +22,23 @@ describe("getAlbumList", () => {
     
     expect(getData).toHaveBeenCalledWith("WantSheet");
     expect(result).toHaveLength(1);
-    expect(result[0][0]).toBe("Artist A");
+    expect(result[0][1]).toBe("Artist A");
   });
 
-  it("should use index 5 for user filtering on Have List", async () => {
+  it("should use index 6 for user filtering on Have List", async () => {
     vi.mocked(getData).mockResolvedValue(mockHaveData);
     
     const result = await getAlbumList("have", { type: "user", term: "UserHave" });
     
     expect(getData).toHaveBeenCalledWith("HaveSheet");
     expect(result).toHaveLength(1);
-    expect(result[0][0]).toBe("Artist B");
+    expect(result[0][1]).toBe("Artist B");
   });
 
   it("should perform a cross-column search for 'search' type", async () => {
     const searchData = [
-      ["Linkin Park", "Hybrid Theory"],
-      ["The Theory", "Some Album"]
+      [1, "Linkin Park", "Hybrid Theory"],
+      [2, "The Theory", "Some Album"]
     ];
     vi.mocked(getData).mockResolvedValue(searchData);
 

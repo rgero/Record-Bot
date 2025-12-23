@@ -6,8 +6,8 @@ export const getAlbumList = async (listType, { type, term }) => {
   const isWantList = listType === "want";
   const sheetName = isWantList ? process.env.WANT_LIST_SHEET_NAME : process.env.ALBUM_SHEET_NAME;
   
-  // Want List user is col 4 (idx 3), Have List user is col 6 (idx 5)
-  const userColumnIndex = isWantList ? 3 : 5;
+  // Want List user is col 5 (idx 4), Have List user is col 7 (idx 6)
+  const userColumnIndex = isWantList ? 4 : 6;
 
   let dataRows = await getData(sheetName);
 
@@ -20,22 +20,22 @@ export const getAlbumList = async (listType, { type, term }) => {
     const searchTerm = term.toLowerCase();
     dataRows = dataRows.filter(
       (row) => 
-        (row[0] && row[0].toLowerCase().includes(searchTerm)) ||
-        (row[1] && row[1].toLowerCase().includes(searchTerm))
+        (row[1] && row[1].toLowerCase().includes(searchTerm)) ||
+        (row[2] && row[2].toLowerCase().includes(searchTerm))
     );
   }
 
   dataRows.sort((a, b) => {
-    const artistCompare = normalizeString(a[0]).localeCompare(
-      normalizeString(b[0]), 
+    const artistCompare = normalizeString(a[1]).localeCompare(
+      normalizeString(b[1]), 
       undefined, 
       { sensitivity: "base" }
     );
 
     if (artistCompare !== 0) return artistCompare;
 
-    return normalizeString(a[1]).localeCompare(
-      normalizeString(b[1]), 
+    return normalizeString(a[2]).localeCompare(
+      normalizeString(b[2]), 
       undefined, 
       { sensitivity: "base" }
     );
