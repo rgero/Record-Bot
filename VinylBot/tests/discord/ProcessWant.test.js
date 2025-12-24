@@ -65,6 +65,7 @@ const createMessage = (content) => ({
   content,
   author: { username: "Roy" },
   reply: vi.fn(),
+  suppressEmbeds: vi.fn(),
 });
 
 const spotifyResponse = {

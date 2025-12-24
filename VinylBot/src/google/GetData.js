@@ -10,7 +10,13 @@ export const getData = async (sheetName = process.env.ALBUM_SHEET_NAME) => {
   });
 
   const rows = res.data.values;
+
   if (!rows || rows.length <= 1) return [];
+
+  if(sheetName == process.env.ALBUM_SHEET_NAME)
+  {
+    rows = rows.map(row => (row.length > 0 ? row.slice(1) : row));
+  }
 
   // Remove header row
   return rows.slice(1);
