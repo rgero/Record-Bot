@@ -1,3 +1,3 @@
-import { getVinyls } from "./services/vinyls.api";
+import { getUsers } from "./services/users.api";
 
-getVinyls();
+getUsers()
