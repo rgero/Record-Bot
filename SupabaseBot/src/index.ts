@@ -1,3 +1,5 @@
-import { getUsers } from "./services/users.api";
+import { getUserByName } from "./services/users.api";
 
-getUsers()
+const anna = getUserByName("Anna");
+
+console.log(anna);
