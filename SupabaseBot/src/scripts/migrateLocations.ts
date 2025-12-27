@@ -1,64 +1,33 @@
 import { Location } from "../interfaces/Location";
 import { addLocations } from "../services/locations.api";
-import dotenv from "dotenv";
-import { google } from "googleapis";
-import path from "node:path";
-
-dotenv.config();
-
-if (!process.env.SPREADSHEET_ID) {
-  throw new Error("SPREADSHEET_ID env var is required");
-}
-
-const SERVICE_ACCOUNT_PATH = path.resolve(
-  process.cwd(),
-  "service-account.json"
-);
-
-const auth = new google.auth.GoogleAuth({
-  keyFile: SERVICE_ACCOUNT_PATH,
-  scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-});
-
-const sheets = google.sheets({version: "v4", auth});
+import { getSheetRows } from "../utils/google/sheetUtils";
 
 async function migrateLocations(): Promise<void> {
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: process.env.SPREADSHEET_ID!,
-    range: "Location Info!A2:E",
-  });
+  try {
+    const rows = await getSheetRows("Location Info!A2:E");
 
-  const rows = response.data.values;
+    const storesToMigrate: Location[] = rows.map((row) => {
+      const [name, address, recommendedRaw, totalPurchased, notes] = row;
+      
+      const recString = String(recommendedRaw).toLowerCase();
+      const recommended = recString === "true" || recString === "yes";
 
-  if (!rows || rows.length === 0) {
-    console.log("No stores found in sheet.");
-    return;
-  }
+      return {
+        name: String(name || "Unknown Store"),
+        address: address ? String(address) : null,
+        recommended,
+        purchaseCount: parseInt(String(totalPurchased)) || 0,
+        notes: notes ? String(notes) : null
+      };
+    });
 
-  let storesToMigrate: Location[] = [];
-  for (const row of rows) {
-    const [name, address, recommendedRaw, totalPurchased, notes] = row;
-
-    if (!name) {
-      console.warn("Skipping invalid row:", row);
-      continue;
+    if (storesToMigrate.length > 0) {
+      await addLocations(storesToMigrate);
+      console.log(`Migrated ${storesToMigrate.length} locations.`);
     }
-
-    const recommended = String(recommendedRaw).toLowerCase() === "true" || String(recommendedRaw).toLowerCase() === "yes";
-
-    const newLocation = {
-      name: String(name),
-      address: address ? String(address) : null,
-      recommended,
-      purchaseCount: totalPurchased ? parseInt(String(totalPurchased)) : 0,
-      notes: notes ? String(notes) : null
-    };
-
-    storesToMigrate.push(newLocation);
+  } catch (error) {
+    console.error("Location migration failed:", error);
   }
-
-  await addLocations(storesToMigrate);
-
 }
 
 migrateLocations().catch(console.error);
