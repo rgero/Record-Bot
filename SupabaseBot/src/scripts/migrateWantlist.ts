@@ -18,6 +18,12 @@ async function migrateWantlist(): Promise<void> {
       const formula = cells[2]?.userEnteredValue?.formulaValue || "";
       const imageUrl = formula.match(/"([^"]+)"/)?.[1] || "";
 
+      // If the imageUrl extraction fails, go to Spotify
+      const artist: string = cells[0]?.formattedValue?.trim() ?? "";
+      const album: string = cells[1]?.formattedValue?.trim() ?? "";
+      
+      // TODO: Fix this... probably?
+
       return {
         artist: cells[0]?.formattedValue?.trim() ?? "Unknown Artist",
         album: cells[1]?.formattedValue?.trim() ?? "Unknown Album",
