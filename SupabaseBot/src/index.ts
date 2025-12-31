@@ -2,6 +2,8 @@ import "dotenv/config";
 
 import { Client, GatewayIntentBits, Message } from "discord.js";
 
+import { ProcessRandomAlbum } from "./discord/ProcessRandomAlbum";
+import { ProcessRandomStore } from "./discord/ProcessRandomStore";
 import { ProcessWant } from "./discord/ProcessWant";
 
 const client: Client = new Client({
@@ -32,8 +34,15 @@ client.on("messageCreate", async (message: Message) => {
     return;
   }
 
-  if (targetMessage.startsWith("!random")) {
-    // ProcessRandom(message);
+  if (targetMessage.startsWith("!2random")) {
+    const args = message.content.split(" ").slice(1);
+    const param = args[0]?.toLowerCase();
+    if (param === "store")
+    {
+      ProcessRandomStore(message);
+    } else {
+      ProcessRandomAlbum(message);
+    }
     return;
   }
 
