@@ -58,3 +58,18 @@ export const getAlbumArtFromSpotify = async (artist: string, album: string): Pro
   const albumId = albumIdMatch[1];
   return await getAlbumArtURL(albumId);
 }
+
+export const spotifyGet = async (endpoint:string): Promise<any> => {
+  const token = await getSpotifyAccessToken();
+
+  const res = await axios.get(
+    `https://api.spotify.com/v1/${endpoint}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return res.data;
+}
