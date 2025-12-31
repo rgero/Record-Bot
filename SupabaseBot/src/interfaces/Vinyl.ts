@@ -1,6 +1,6 @@
 
 export interface Vinyl {
-  id?: string;
+  id?: number;
   purchaseNumber: number;
   artist: string;
   album: string;

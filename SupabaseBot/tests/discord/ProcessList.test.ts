@@ -1,5 +1,4 @@
 import * as commandParser from '../../src/utils/parseCommand';
-import * as userApi from '../../src/services/users.api';
 import * as vinylApi from '../../src/services/vinyls.api';
 import * as wantlistApi from '../../src/services/wantlist.api';
 
@@ -7,11 +6,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Message } from 'discord.js';
 import { ProcessList } from '../../src/discord/ProcessList';
-
-// Import mocked modules
-
-
-
 
 // Setup Mocks
 vi.mock('../../src/services/vinyls.api');
@@ -109,7 +103,7 @@ describe('ProcessList Integration Tests', () => {
         term: ''
       });
 
-      vi.mocked(wantlistApi.getWantList).mockResolvedValue([['Linkin Park', 'Hybrid Theory']]);
+      vi.mocked(wantlistApi.getWantList).mockResolvedValue([{artist: 'Linkin Park', album:'Hybrid Theory'}]);
 
       await ProcessList(mockMessage, 'want');
 

@@ -1,16 +1,17 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ComponentType, EmbedBuilder, Message} from "discord.js";
 
+import { SearchResponse } from "../interfaces/SearchResponse";
 import { escapeColons } from "../utils/escapeColons";
 import { getVinylsByQuery } from "../services/vinyls.api";
 import { getWantList } from "../services/wantlist.api";
 import { parseCommand } from "../utils/parseCommand";
 
-const generateEmbed = (list: [string, string][], page: number, totalPages: number, type: string, term: string, listType: 'want' | 'have', pageSize = 10) => {
+const generateEmbed = (list: SearchResponse[], page: number, totalPages: number, type: string, term: string, listType: 'want' | 'have', pageSize = 10) => {
   const start = page * pageSize;
   const pageItems = list.slice(start, start + pageSize);
 
   const description = pageItems
-    .map((item, idx) => `${start + idx + 1}. **${escapeColons(item[0])}** - ${escapeColons(item[1])}`)
+    .map((item: SearchResponse, idx: number) => `${start + idx + 1}. **${escapeColons(item.artist)}** - ${escapeColons(item.album)}`)
     .join("\n");
 
   const listName = listType === "want" ? "Want List" : "Collection";

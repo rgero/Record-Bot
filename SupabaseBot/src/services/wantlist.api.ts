@@ -1,3 +1,4 @@
+import { SearchResponse } from "../interfaces/SearchResponse";
 import { WantedItem } from "../interfaces/WantedItem";
 import supabase from "./supabase";
 
@@ -8,7 +9,7 @@ export const getWantedItems = async () => {
   else console.log(data);
 }
 
-export const getWantList = async (query: { type: string; term: string }): Promise<[string, string][]> => {
+export const getWantList = async (query: { type: string; term: string }): Promise<SearchResponse[]> => {
   let dbQuery = supabase.from('wanted_items').select('artist, album');
 
   if (query.type === 'user') {
@@ -19,7 +20,7 @@ export const getWantList = async (query: { type: string; term: string }): Promis
 
   const { data, error } = await dbQuery;
   if (error) throw error;
-  return (data || []).map(item => [item.artist, item.album]);
+  return data;
 };
 
 

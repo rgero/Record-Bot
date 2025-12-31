@@ -3,6 +3,7 @@ import "dotenv/config";
 import { Client, GatewayIntentBits, Message } from "discord.js";
 
 import { ProcessList } from "./discord/ProcessList";
+import { ProcessPlay } from "./discord/ProcessPlay";
 import { ProcessRandomAlbum } from "./discord/ProcessRandomAlbum";
 import { ProcessRandomStore } from "./discord/ProcessRandomStore";
 import { ProcessWant } from "./discord/ProcessWant";
@@ -29,9 +30,9 @@ client.on("messageCreate", async (message: Message) => {
     return;
   }
 
-  if (targetMessage.toLocaleLowerCase().startsWith("!play "))
+  if (targetMessage.toLocaleLowerCase().startsWith("!2play "))
   {
-    // ProcessPlay(message);
+    ProcessPlay(message);
     return;
   }
 

@@ -1,7 +1,7 @@
 import { EmbedBuilder, Message } from "discord.js";
-import { addWantedItem, findWantedItem } from "../services/wantlist.api";
 
 import { SpotifyUrl } from "../interfaces/spotify/SpotifyUrl";
+import { addWantedItem } from "../services/wantlist.api";
 import { escapeColons } from "../utils/escapeColons";
 import { getDropdownValue } from "../utils/discordToDropdown";
 import { getSpotifyData } from "../spotify/getSpotifyData";
