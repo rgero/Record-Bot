@@ -28,7 +28,6 @@ export const getAlbumArtURL = async (albumId: string): Promise<string> => {
   return data.images?.[0]?.url ?? "";
 };
 
-
 export const getAlbumURL = async (artist: string, album: string): Promise<string> => {
   const accessToken = await getSpotifyAccessToken();
 
@@ -48,7 +47,6 @@ export const getAlbumURL = async (artist: string, album: string): Promise<string
 
   return data.albums.items[0]?.external_urls?.spotify ?? "";
 };
-
 
 export const getAlbumArtFromSpotify = async (artist: string, album: string): Promise<string> => {
   const url = await getAlbumURL(artist, album);

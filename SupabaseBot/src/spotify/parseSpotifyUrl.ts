@@ -1,4 +1,6 @@
-export const parseSpotifyUrl = (text: string) => {
+import { SpotifyUrl } from "../interfaces/spotify/SpotifyUrl";
+
+export const parseSpotifyUrl = (text: string): SpotifyUrl|null => {
   const match = text.match(
     /open\.spotify\.com\/(album|track|artist)\/([a-zA-Z0-9]+)/
   );

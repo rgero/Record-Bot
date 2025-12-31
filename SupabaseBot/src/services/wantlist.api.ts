@@ -7,10 +7,14 @@ export const getWantedItems = async () => {
   else console.log(data);
 }
 
-export const addWantedItem = async (newWantedItem: WantedItem) => {
-  const { data, error } = await supabase.from('wanted_items').insert([newWantedItem]);
-  if (error) console.error(error);
-  else console.log(data);
+export const addWantedItem = async (newWantedItem: WantedItem): Promise<boolean> => {
+  const { error } = await supabase.from('wanted_items').insert([newWantedItem]);
+  if (error)
+  {
+    console.error(error);
+    return false;
+  }
+  return true;
 }
 
 export const addWantedItems = async (newWantedItems: WantedItem[]) => {
@@ -38,7 +42,6 @@ export const findWantedItem = async (wantlistitem : Partial<WantedItem>) => {
     const value = (wantlistitem as any)[key];
     query = query.eq(key, value);
   }
-  const { data, error } = await query;
-  if (error) console.error(error);
-  else console.log(data);
+  const { data } = await query;
+  return data;
 }

@@ -1,4 +1,4 @@
 export interface SpotifyUrl {
-  type: "album" | "track" | "artist";
+  type: string;
   id: string;
 }
