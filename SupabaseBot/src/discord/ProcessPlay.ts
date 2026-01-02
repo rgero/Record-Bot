@@ -1,28 +1,14 @@
 import {ActionRowBuilder, ComponentType, Message, MessageActionRowComponentBuilder, StringSelectMenuBuilder} from "discord.js";
-import { getVinylByDetails, getVinylsByQuery, updateVinyl } from "../services/vinyls.api";
 
 import { PlayLog } from "../interfaces/PlayLog";
 import { SearchResponse } from "../interfaces/SearchResponse";
 import { User } from "../interfaces/User";
-import { Vinyl } from "../interfaces/Vinyl";
-import { addPlayLog } from "../services/plays.api";
 import { getDropdownValue } from "../utils/discordToDropdown";
 import { getSpotifyData } from "../spotify/getSpotifyData";
 import { getUserByName } from "../services/users.api";
+import { getVinylsByQuery } from "../services/vinyls.api";
 import { parseSpotifyUrl } from "../spotify/parseSpotifyUrl";
-
-const processNewPlay = async (newPlay: PlayLog) => {
-  const targetAlbum: Vinyl | null = await getVinylByDetails(newPlay.artist, newPlay.album);
-
-  if (!targetAlbum || !targetAlbum.id) {
-    throw new Error(`Can't find album: ${newPlay.artist} - ${newPlay.album}`);
-  }
-  
-  const updatedCount = (targetAlbum.playCount || 0) + 1;
-
-  await updateVinyl(targetAlbum.id, { playCount: updatedCount });
-  await addPlayLog(newPlay);
-};
+import { processNewPlay } from "../actions/processNewPlay";
 
 export const ProcessPlay = async (message: Message) => {
   const params = message.content.split(" ").slice(1).join(" ").trim();

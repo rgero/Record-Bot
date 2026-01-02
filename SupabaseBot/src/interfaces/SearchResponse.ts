@@ -3,6 +3,6 @@ export interface SearchResponse
   id?: string,
   artist: string,
   album: string;
-  owner?: string[];
+  owners?: string[];
   searcher?: string[];
 }

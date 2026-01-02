@@ -1,10 +1,13 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, Message, MessageActionRowComponentBuilder} from "discord.js";
 import { getVinyls, getVinylsLikedByUserID } from "../services/vinyls.api";
 
+import { PlayLog } from "../interfaces/PlayLog";
 import { User } from "../interfaces/User";
 import { Vinyl } from "../interfaces/Vinyl";
 import { escapeColons } from "../utils/escapeColons";
+import { getDropdownValue } from "../utils/discordToDropdown";
 import { getUserByName } from "../services/users.api";
+import { processNewPlay } from "../actions/processNewPlay";
 
 const buildEmbed = (artist: string, album: string) => {
   const description = `🎵 **${artist}**\n💿 *${album}*`;
@@ -49,10 +52,16 @@ export const ProcessRandomAlbum = async (message: Message) => {
     const args = message.content.split(/\s+/).slice(1);
     const param = args[0]?.toLowerCase().trim();
 
+    let user: User | null = await getUserByName(getDropdownValue(message.author?.username || "Unknown"))
+    if (!user) {
+      await message.reply("❌ No matching user found.");
+      return;
+    }
+
     let vinyls: Vinyl[] = [];
 
     if (param) {
-      const user: User | null = await getUserByName(param);
+      user = await getUserByName(param);
       if (!user) {
         await message.reply("❌ No matching user found.");
         return;
@@ -97,7 +106,14 @@ export const ProcessRandomAlbum = async (message: Message) => {
           components: [],
         });
 
-        // LOG PLAY.
+        const newPlay: PlayLog =
+        {
+          artist: currentVinyl.artist,
+          album: currentVinyl.album,
+          listeners: [user.id],
+          date: new Date()
+        }
+        await processNewPlay(newPlay);
 
         await interaction.followUp({
           content: `▶️ **Play logged:** ${currentVinyl.artist} — *${currentVinyl.album}*`,

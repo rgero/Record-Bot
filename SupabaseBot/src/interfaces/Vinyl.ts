@@ -7,7 +7,7 @@ export interface Vinyl {
   purchaseDate: Date;
   purchaseLocation: string;
   price: number;
-  owner: string[];
+  owners: string[];
   length: number;
   notes?: string;
   playCount: number;

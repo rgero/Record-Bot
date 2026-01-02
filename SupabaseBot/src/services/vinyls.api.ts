@@ -29,7 +29,7 @@ export const getVinylsByQuery = async (query: { type: string; term: string }): P
   let dbQuery = supabase.from('vinyls').select('id, artist, album');
 
   if (query.type === 'user') {
-    dbQuery = dbQuery.contains('owner', [query.term]);
+    dbQuery = dbQuery.contains('owners', [query.term]);
   } else if (query.type === 'search') {
     dbQuery = dbQuery.or(`artist.ilike.%${query.term}%,album.ilike.%${query.term}%`);
   }

@@ -15,7 +15,7 @@ const migrateVinyls = async (): Promise<void> => {
     if (rows.length === 0) return;
 
     const itemsToMigrate: Vinyl[] = rows.map((row) => {
-      const [purchaseNum, artist, album, date, loc, price, owner, len, notes, plays, likes] = row;
+      const [purchaseNum, artist, album, date, loc, price, owners, len, notes, plays, likes] = row;
 
       let likedByArray: string[] = [];
       const likesSplit = String(likes).split(",");
@@ -33,7 +33,7 @@ const migrateVinyls = async (): Promise<void> => {
         purchaseDate: date ? new Date(date) : new Date(),
         purchaseLocation: locationMap.get(loc) ?? "",
         price: parseFloat(price) || 0,
-        owner: userMap.get(owner) ?? [],
+        owners: userMap.get(owners) ?? [],
         length: parseInt(len) || 0,
         notes: notes ?? "",
         playCount: parseInt(plays) || 0,
