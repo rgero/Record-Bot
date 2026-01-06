@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { getAlbumArtFromSpotify } from "../services/spotify.api.js";
 import supabase from "../services/supabase.js";
 
@@ -18,9 +19,8 @@ export async function populateAlbumArt(): Promise<void>
   for (const album of albumsToFix) {
     try {
       const albumArtUrl = await getAlbumArtFromSpotify(album.artist, album.album);
-      console.log(albumArtUrl);
       if (albumArtUrl) {
-        const { error: updateError } = await supabase.from("wanted_items").update({ imageUrl: albumArtUrl }).eq("id", album.id);
+        await supabase.from("wanted_items").update({ imageUrl: albumArtUrl }).eq("id", album.id);
       }
     } catch (error) {
       console.error(`Error fetching album art for ${album.artist} - ${album.album}:`, error);
@@ -28,6 +28,6 @@ export async function populateAlbumArt(): Promise<void>
   }
 }
 
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   populateAlbumArt().catch(console.error);
 }

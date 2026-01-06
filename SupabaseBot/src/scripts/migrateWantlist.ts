@@ -1,11 +1,11 @@
 import { WantedItem } from "../interfaces/WantedItem.js";
 import { addWantedItems } from "../services/wantlist.api.js";
+import { fileURLToPath } from 'node:url';
 import { getSheetRowsWithMetadata } from "../utils/google/sheetUtils.js";
 import { resolveUserMap } from "../utils/resolveUserMap.js";
 
 export async function migrateWantlist(): Promise<void> {
   try {
-    // Fetch data and user map in parallel
     const [rowData, userMap] = await Promise.all([
       getSheetRowsWithMetadata("Searching For!A2:E"),
       resolveUserMap()
@@ -13,16 +13,12 @@ export async function migrateWantlist(): Promise<void> {
 
     const itemsToMigrate: WantedItem[] = rowData.map((row) => {
       const cells = row.values || [];
-      
-      // Extract URL from =IMAGE("https://...") formula
       const formula = cells[2]?.userEnteredValue?.formulaValue || "";
       const imageUrl = formula.match(/"([^"]+)"/)?.[1] || "";
 
       const artist: string = cells[0]?.formattedValue?.trim() ?? "Unknown Artist";
       const album: string = cells[1]?.formattedValue?.trim() ?? "Unknown Album";
       
-      // Use flatMap to resolve the searcher name to a flat array of IDs
-      // Standardizes the name to lowercase to match the new Map keys
       const searcherName = (cells[3]?.formattedValue ?? "").trim().toLowerCase();
       const searcherIds = userMap.get(searcherName) ?? [];
 
@@ -35,7 +31,6 @@ export async function migrateWantlist(): Promise<void> {
       };
     });
 
-    // Only migrate items that have at least one valid searcher ID
     const validItems = itemsToMigrate.filter(item => item.searcher.length > 0);
     
     if (validItems.length > 0) {
@@ -49,6 +44,6 @@ export async function migrateWantlist(): Promise<void> {
   }
 }
 
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   migrateWantlist().catch(console.error);
 }

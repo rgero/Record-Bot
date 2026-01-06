@@ -7,7 +7,7 @@
     "dev": "tsx src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "run:ts": "ts-node",
+    "run:ts": "node --loader ts-node/esm",
     "test": "vitest",
     "test:run": "vitest run"
   },

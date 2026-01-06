@@ -1,5 +1,6 @@
 import { Location } from "../interfaces/Location.js";
 import { addLocations } from "../services/locations.api.js";
+import { fileURLToPath } from 'node:url';
 import { getSheetRows } from "../utils/google/sheetUtils.js";
 
 export async function migrateLocations(): Promise<void> {
@@ -39,6 +40,6 @@ export async function migrateLocations(): Promise<void> {
   }
 }
 
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   migrateLocations().catch(console.error);
 }
