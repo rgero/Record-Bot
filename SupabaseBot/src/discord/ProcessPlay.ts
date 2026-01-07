@@ -47,7 +47,7 @@ export const ProcessPlay = async (message: Message) => {
       const { artists, albumName } = await getSpotifyData(spotify);
       const newPlay: PlayLog = { artist: artists, album: albumName, listeners: listenerIDs, date: new Date() };
       await processNewPlay(newPlay);
-      return message.reply(`✅ Logged for **${artists}** (${listenerCount} listeners)`);
+      return message.reply(`✅ Logged for **${artists}** - **${albumName}** for ${listenerCount} listener${listenerCount === 1 ? "" : "s"}`);
     } catch (e: any) { return message.reply(`❌ Spotify error: ${e.message}`); }
   }
 
@@ -60,7 +60,7 @@ export const ProcessPlay = async (message: Message) => {
     try {
       const newPlay: PlayLog = { artist: res.artist, album: res.album, listeners: listenerIDs, date: new Date() };
       await processNewPlay(newPlay);
-      return message.reply(`✅ Logged **${res.artist}** for ${listenerCount} listeners`);
+      return message.reply(`✅ Logged **${res.artist}** - **${res.album}** for ${listenerCount} listener${listenerCount === 1 ? "" : "s"}`);
     } catch (e: any) { return message.reply(`❌ Error: ${e.message}`); }
   }
 
@@ -74,7 +74,7 @@ export const ProcessPlay = async (message: Message) => {
     new StringSelectMenuBuilder().setCustomId("select_album").setPlaceholder("Choose an album...").addOptions(options)
   );
 
-  const reply = await message.reply({ content: `Multiple matches found (${listenerCount} listeners):`, components: [row] });
+  const reply = await message.reply({ content: `Multiple matches found (${listenerCount} listener${listenerCount === 1 ? "" : "s"}):`, components: [row] });
 
   const collector = reply.createMessageComponentCollector({ componentType: ComponentType.StringSelect, max: 1, time: 60000 });
 
@@ -83,7 +83,7 @@ export const ProcessPlay = async (message: Message) => {
     const { artist, album } = data[parseInt(int.values[0])];
     try {
       await processNewPlay({ artist, album, listeners: listenerIDs, date: new Date() });
-      await int.update({ content: `✅ Logged **${artist}** for ${listenerCount} listeners`, components: [] });
+      await int.update({ content: `✅ Logged **${artist}** - **${album}** for ${listenerCount} listener${listenerCount === 1 ? "" : "s"}`, components: [] });
     } catch (e: any) { await int.update({ content: `❌ Error: ${e.message}`, components: [] }); }
   });
 };
