@@ -30,7 +30,7 @@ client.on("messageCreate", async (message: Message) => {
     return;
   }
 
-  if (targetMessage.toLocaleLowerCase().startsWith("!play "))
+  if (targetMessage.toLocaleLowerCase().startsWith("!2play "))
   {
     ProcessPlay(message);
     return;

@@ -1,12 +1,10 @@
 version: "3.9"
-
 services:
   vinylbot:
-    build: .
+    image: roymond/vinyl-bot:latest
     container_name: vinylbot
     restart: unless-stopped
     env_file:
       - .env
     volumes:
       - ./service-account.json:/usr/src/app/service-account.json:ro
-      - ./src:/usr/src/app/src:ro

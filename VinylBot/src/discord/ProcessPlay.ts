@@ -37,7 +37,6 @@ export const ProcessPlay = async (message: Message) => {
 
   // 3. Clean search params
   const params = message.content.split(" ").slice(1).join(" ").replace(/<@!?\d+>/g, "").trim();
-
   if (!params) return message.reply("Please provide an album name or Spotify URL.");
 
   // --- CASE 1: SPOTIFY ---

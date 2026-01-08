@@ -1,21 +1,17 @@
-# Use official Node.js LTS image
-FROM node:20-alpine
-
-# Set working directory
+# STEP 1: The "Build" Environment
+FROM node:20-alpine AS builder
 WORKDIR /usr/src/app
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
+COPY . .
+RUN npm run build
 
-# Copy the src folder
-COPY src ./src
+# STEP 2: The "Run" Environment
+FROM node:20-alpine
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install --omit=dev
+COPY --from=builder /usr/src/app/dist ./dist
+COPY discordMapping.json ./
 
-# Copy service account separately
-COPY service-account.json ./service-account.json
-COPY discordMapping.json ./discordMapping.json
-
-# Run the bot from src/index.js
-CMD ["node", "src/index.js"]
+CMD ["npm", "start"]
