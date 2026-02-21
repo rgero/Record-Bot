@@ -1,16 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getArtistVinylCountByUserId, getArtistVinylCounts } from '../../src/services/vinyls.api.js';
+import { getArtistVinylCountByUserId, getArtistVinylCounts } from '../../../src/services/vinyls.api.js';
 
-import { EmbeddedResponse } from '../../src/utils/discord/EmbeddedResponse.js';
-import { ProcessTop } from '../../src/discord/stats/ProcessTop.js'; // Adjust path as needed
-import { getNameById } from '../../src/services/users.api.js';
-import { parseCommand } from '../../src/utils/parseCommand.js';
+import { EmbeddedResponse } from '../../../src/utils/discord/EmbeddedResponse.js';
+import { ProcessTop } from '../../../src/discord/stats/ProcessTop.js';
+import { getNameById } from '../../../src/services/users.api.js';
+import { parseCommand } from '../../../src/utils/parseCommand.js';
 
-// 1. Mock the dependencies
-vi.mock('../../src/utils/parseCommand.js');
-vi.mock('../../src/services/users.api.js');
-vi.mock('../../src/services/vinyls.api.js');
-vi.mock('../../src/utils/discord/EmbeddedResponse.js');
+vi.mock('../../../src/utils/parseCommand.js');
+vi.mock('../../../src/services/users.api.js');
+vi.mock('../../../src/services/vinyls.api.js');
+vi.mock('../../../src/utils/discord/EmbeddedResponse.js');
 
 describe('ProcessTop', () => {
   let mockMessage: any;
@@ -18,7 +17,6 @@ describe('ProcessTop', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Create a fake Discord message object
     mockMessage = {
       reply: vi.fn(),
       channel: { send: vi.fn() },
@@ -34,7 +32,6 @@ describe('ProcessTop', () => {
   });
 
   it('should fetch and display top artists for a specific user', async () => {
-    // Setup mocks
     vi.mocked(parseCommand).mockResolvedValue({ type: 'user', term: '123' });
     vi.mocked(getNameById).mockResolvedValue('JohnDoe');
     vi.mocked(getArtistVinylCountByUserId).mockResolvedValue([
@@ -42,12 +39,10 @@ describe('ProcessTop', () => {
     ]);
 
     await ProcessTop(mockMessage);
-
-    // Verify correct APIs were called
+    
     expect(getNameById).toHaveBeenCalledWith('123');
     expect(getArtistVinylCountByUserId).toHaveBeenCalledWith('123');
 
-    // Verify the response was sent with correct title
     expect(EmbeddedResponse).toHaveBeenCalledWith(expect.objectContaining({
       title: 'Top Artists by Album Count for JohnDoe',
       list: [{ title: 'Rise Against', count: 5 }]
@@ -73,7 +68,6 @@ describe('ProcessTop', () => {
     vi.mocked(parseCommand).mockResolvedValue({ type: 'full', term: '' });
     vi.mocked(getArtistVinylCounts).mockRejectedValue(new Error('DB Down'));
 
-    // Silence the expected console.error in test output
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await ProcessTop(mockMessage);
