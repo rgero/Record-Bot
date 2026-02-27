@@ -48,9 +48,12 @@ client.on("messageCreate", async (message: Message) => {
       return await ProcessPlay(message);
 
     case "random":
-      return args[1]?.toLowerCase() === "store"
-        ? await ProcessRandomStore(message)
-        : await ProcessRandomAlbum(message);
+      switch (args[1]?.toLowerCase()) {
+        case "store":
+          return await ProcessRandomStore(message);
+        default:
+          return await ProcessRandomAlbum(message);
+      }
 
     case "add":
       return await ProcessAdd(message);
