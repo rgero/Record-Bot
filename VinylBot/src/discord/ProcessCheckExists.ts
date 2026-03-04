@@ -13,7 +13,7 @@ export const ProcessCheckExists = async (message: Message) => {
   const reply = await message.reply("🔍 Checking album existence…");
 
   try {
-    let exists: DiscogResponse | null = null;
+    let response: DiscogResponse | null = null;
     let albumName = "";
     let artists = "";
 
@@ -25,7 +25,7 @@ export const ProcessCheckExists = async (message: Message) => {
       const spotifyData = await getSpotifyData(spotifyURL);
       ({ artists, albumName } = spotifyData);
 
-      exists = await CheckAlbumExistence(artists, albumName);
+      response = await CheckAlbumExistence(artists, albumName);
     } else {
       // Case 2: Artist | Album provided
       const queryString = args.join(" ");
@@ -38,18 +38,22 @@ export const ProcessCheckExists = async (message: Message) => {
       }
 
       [, artists, albumName] = match;
-      exists = await CheckAlbumExistence(artists, albumName);
+      response = await CheckAlbumExistence(artists, albumName);
+    }
+
+    if (!response) {
+      return reply.edit("Error getting response from Discogs. Try again or go the website")
     }
 
     const embed = new EmbedBuilder()
-      .setTitle(`Does: ${escapeColons(exists?.title)} exist?`)
+      .setTitle(`Does: ${escapeColons(response?.title)} exist?`)
       .setColor(0xf1c40f)
       .setThumbnail(
-        exists?.cover ?? "https://records.roymond.net/placeholder-album.png"
+        response?.cover ?? "https://records.roymond.net/placeholder-album.png"
       )
       .addFields({
         name: "Exists?",
-        value: exists ? "✅ Yes" : "❌ No",
+        value: response?.exists ? "✅ Yes" : "❌ No",
         inline: true,
       });
 

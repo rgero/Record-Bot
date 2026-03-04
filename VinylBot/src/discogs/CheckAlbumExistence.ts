@@ -27,7 +27,10 @@ export const CheckAlbumExistence = async (artist: string, album: string): Promis
   });
 
   const results = search.data.results;
-  if (!results.length) return null;
+  if (!results.length) return {
+    title: `${artist} - ${album}`,
+    exists: false,
+  };
 
   const targetAlbum = normalize(album);
 
@@ -60,6 +63,7 @@ export const CheckAlbumExistence = async (artist: string, album: string): Promis
     if (hasVinyl) return {
       title: match.title,
       cover: match.cover_image,
+      exists: true
     };
   }
 
