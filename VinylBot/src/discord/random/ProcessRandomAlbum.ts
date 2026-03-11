@@ -40,6 +40,14 @@ const buildRow = ({ showPlay, disabled = false }: { showPlay: boolean; disabled?
       .setDisabled(disabled)
   );
 
+  buttons.push(
+    new ButtonBuilder()
+      .setCustomId("cancel")
+      .setLabel("❌ Cancel")
+      .setStyle(ButtonStyle.Danger)
+      .setDisabled(disabled)
+  )
+
   return new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(buttons);
 };
 
@@ -137,10 +145,21 @@ export const ProcessRandomAlbum = async (message: Message) => {
           components: [buildRow({ showPlay: true })],
         });
       }
+
+      if (interaction.customId === "cancel")
+      {
+        collector.stop("cancelled");
+
+        return await interaction.update({
+          content: "🎲 Random pick cancelled.",
+          embeds: [],
+          components: [],
+        });
+      }
     });
 
     collector.on("end", (_collected, reason) => {
-      if (reason === "played") return;
+      if (reason === "played" || reason === "cancelled") return;
       sentMessage.edit({
         components: [buildRow({ showPlay: true, disabled: true })],
       }).catch(() => {});
