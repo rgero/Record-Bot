@@ -1,6 +1,7 @@
 import {ActionRowBuilder, ComponentType, EmbedBuilder, Message, StringSelectMenuBuilder} from "discord.js";
 
 import type { Vinyl } from "../interfaces/Vinyl.js";
+import { escapeColons } from "../utils/escapeColons.js";
 import { getFullVinylsByQuery } from "../services/vinyls.api.js";
 import { getUserById } from "../services/users.api.js";
 
@@ -25,7 +26,7 @@ const buildVinylEmbed = async (vinyl: Vinyl) => {
   }
 
   return new EmbedBuilder()
-    .setTitle(limit(`${vinyl.artist} — ${vinyl.album}`, 256))
+    .setTitle(limit(`${escapeColons(vinyl.artist)} — ${escapeColons(vinyl.album)}`, 256))
     .setColor(0x8b5cf6)
     .setThumbnail(vinyl.imageUrl || null)
     .addFields(
