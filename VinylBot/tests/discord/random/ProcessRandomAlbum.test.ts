@@ -79,6 +79,24 @@ describe('ProcessRandomAlbum', () => {
     expect(mockCollector.on).toHaveBeenCalledWith('collect', expect.any(Function));
   });
 
+    it('should successfully use escape colons.', async () => {
+    const mockVinyls = [{ id: 'v1', artist: 'Artist A', album: 'Heaven :x: Hell' }] as unknown as Vinyl[];
+    vi.mocked(parseCommand).mockResolvedValue({ type: 'full', term: '' });
+    vi.mocked(getUserByName).mockResolvedValue({ id: '1', name: 'testuser' } as any);
+    vi.mocked(getVinyls).mockResolvedValue(mockVinyls);
+
+    await ProcessRandomAlbum(mockMessage);
+
+    // Verify initial reply with embed and buttons
+    expect(mockMessage.reply).toHaveBeenCalledWith(expect.objectContaining({
+      embeds: [expect.objectContaining({ title: '🎲 Random Pick', description: expect.stringContaining('Heaven \\:x\\: Hell') })],
+      components: expect.any(Array)
+    }));
+
+    // Verify collector was created
+    expect(mockCollector.on).toHaveBeenCalledWith('collect', expect.any(Function));
+  });
+
   it('should handle the cancel button interaction correctly', async () => {
     const mockVinyls = [{ id: 'v1', artist: 'Artist A', album: 'Album A' }] as unknown as Vinyl[];
     vi.mocked(parseCommand).mockResolvedValue({ type: 'full', term: '' });
