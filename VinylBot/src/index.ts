@@ -35,14 +35,20 @@ client.on("messageCreate", async (message: Message) => {
   const command = args[0].toLowerCase();
 
   switch (command) {
-    case "wantlist":
-      return await ProcessList(message, "want");
-
-    case "want":
-      return await ProcessWant(message);
-
+    case "add":
+      return await ProcessAdd(message);
+      
+    case "exists":
+      return await ProcessCheckExists(message);
+  
     case "have":
       return await ProcessList(message, "have");
+
+    case "help":
+      return await ProcessHelp(message);
+
+    case "info":
+      return await ProcessInfo(message);
 
     case "play":
       return await ProcessPlay(message);
@@ -55,9 +61,6 @@ client.on("messageCreate", async (message: Message) => {
           return await ProcessRandomAlbum(message);
       }
 
-    case "add":
-      return await ProcessAdd(message);
-
     case "top":
       switch (args[1]?.toLowerCase()) {
         case "plays":
@@ -68,14 +71,12 @@ client.on("messageCreate", async (message: Message) => {
           return await ProcessTop(message);
       }
 
-    case "info":
-      return await ProcessInfo(message);
+    case "want":
+      return await ProcessWant(message);
 
-    case "exists":
-      return await ProcessCheckExists(message);
+    case "wantlist":
+      return await ProcessList(message, "want");
 
-    case "help":
-      return await ProcessHelp(message);
   }
 });
 
