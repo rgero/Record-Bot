@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, Message, MessageActionRowComponentBuilder } from "discord.js";
+import { getUnplayedVinyls, getVinyls, getVinylsByQuery, getVinylsLikedByUserID } from "../../services/vinyls.api.js";
 import { getUserById, getUserByName } from "../../services/users.api.js";
-import { getVinyls, getVinylsByQuery, getVinylsLikedByUserID } from "../../services/vinyls.api.js";
 
 import { PlayLog } from "../../interfaces/PlayLog.js";
 import { SearchResponse } from "../../interfaces/SearchResponse.js";
@@ -68,6 +68,9 @@ export const ProcessRandomAlbum = async (message: Message) => {
       if (targetUser) {
         vinyls = (await getVinylsLikedByUserID(targetUser.id)) as SearchResponse[];
       }
+    } else if (context.type === "unplayed") {
+      targetUser = await getUserByName(getDropdownValue(message.author.username));
+      vinyls = (await getUnplayedVinyls(targetUser!.id)) as SearchResponse[];
     } else if (context.type === "search") {
       vinyls = await getVinylsByQuery({ type: "search", term: context.term });
       targetUser = await getUserByName(getDropdownValue(message.author.username));

@@ -3,13 +3,19 @@ import { getDropdownValue } from "./discordToDropdown.js";
 import { resolveUserMap } from "./resolveUserMap.js";
 
 export interface CommandContext {
-  type: "full" | "user" | "search";
+  type: "full" | "user" | "search" | "unplayed";
   term: string;
 }
 
 export const parseCommand = async (message: Message): Promise<CommandContext | undefined> => {
   const words = message.content.split(/\s+/).filter(Boolean);
+  const command = words[0]?.toLowerCase();
   const args = words.slice(1).join(" ").trim();
+
+  // Early Return for unplayed.
+  if (args.toLowerCase() === "--unplayed" && command === "!random") {
+    return { type: "unplayed", term: "unplayed" };
+  }
 
   // 1. Handle Mentions (User Mode)
   const mentions = message.mentions.users.filter(u => !u.bot);
