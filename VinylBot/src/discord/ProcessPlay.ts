@@ -19,7 +19,7 @@ async function resolveVinylId(artist: string, album: string): Promise<number> {
 }
 
 export const ProcessPlay = async (message: Message) => {
-  const userMap = await resolveUserMap(); //
+  const userMap = await resolveUserMap();
   
   // 1. Identify requester
   const requesterName = getDropdownValue(message.author.username).toLowerCase();

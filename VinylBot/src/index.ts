@@ -13,6 +13,7 @@ import { ProcessRandomAlbum } from "./discord/random/ProcessRandomAlbum.js";
 import { ProcessRandomStore } from "./discord/random/ProcessRandomStore.js";
 import { ProcessTop } from "./discord/stats/ProcessTop.js";
 import { ProcessTopLocation } from "./discord/stats/ProcessTopLocation.js";
+import { ProcessUnplayed } from "./discord/ProcessUnplayed.js";
 import { ProcessWant } from "./discord/ProcessWant.js";
 
 const client: Client = new Client({
@@ -71,12 +72,14 @@ client.on("messageCreate", async (message: Message) => {
           return await ProcessTop(message);
       }
 
+    case "unplayed":
+      return await ProcessUnplayed(message);
+
     case "want":
       return await ProcessWant(message);
 
     case "wantlist":
       return await ProcessList(message, "want");
-
   }
 });
 

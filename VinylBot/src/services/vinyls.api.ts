@@ -183,3 +183,13 @@ export const haveVinyl = async (query: {artist: string, album: string}): Promise
   if (error) throw error;
   return !!data;
 }
+
+export const getUnplayedVinyls = async (userID: string): Promise<Vinyl[]> => {
+  const { data, error } = await supabase.rpc('get_unplayed_vinyls', { target_user_id: userID}) 
+  if (error) {
+    console.error('Error fetching vinyls:', error)
+    return [];
+  } else {
+    return data as Vinyl[];
+  }
+}

@@ -1,0 +1,40 @@
+import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse";
+import { Message } from "discord.js";
+import { escapeColons } from "../utils/escapeColons";
+import { getDropdownValue } from "../utils/discordToDropdown";
+import { getUnplayedVinyls } from "../services/vinyls.api";
+import { resolveUserMap } from "../utils/resolveUserMap";
+
+export const ProcessUnplayed = async (message: Message) => {
+    const userMap = await resolveUserMap();
+    const requesterName = getDropdownValue(message.author.username).toLowerCase();
+    const requesterIds = userMap.get(requesterName);
+
+    if (!requesterIds) {
+      console.warn(`User ${message.author.username} not found in database.`);
+      return message.reply("⚠️ You are not registered in the system.");
+    }
+
+    const userID = requesterIds[0];
+
+    try {
+      const unplayedVinyls = await (await getUnplayedVinyls(userID)).sort( (a, b) => a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album) );
+
+      if (unplayedVinyls && unplayedVinyls.length === 0) {
+        return message.reply("🎉 You have no unplayed records! Well done!");
+      }
+
+      // Time to generate the response.
+      await EmbeddedResponse({
+        message,
+        title: `Your Unplayed Vinyls (${unplayedVinyls.length} total)`,
+        list: unplayedVinyls,
+        formatItem: (item, idx) => `${idx + 1}. **${escapeColons(item.artist)}** - ${escapeColons(item.album)}`,
+        color: 0x3498db,
+      });
+
+    } catch (error) { 
+      console.error("Error processing unplayed vinyls:", error);
+      return message.reply("❌ An error occurred while fetching your unplayed records.");
+    }
+  };
