@@ -10,9 +10,9 @@ export interface CommandContext {
 export const parseCommand = async (message: Message): Promise<CommandContext | undefined> => {
   const words = message.content.split(/\s+/).filter(Boolean);
   const command = words[0]?.toLowerCase();
-  const args = words.slice(1).join(" ").trim();
+  const args = words.slice(1).join(" ").trim().replace("—", "--");
 
-  // Early Return for unplayed.
+  // Early Return for Unplayed, and future flags
   if (args.toLowerCase() === "--unplayed" && command === "!random") {
     return { type: "unplayed", term: "unplayed" };
   }
