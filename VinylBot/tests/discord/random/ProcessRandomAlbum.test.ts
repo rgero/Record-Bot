@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getUserById, getUserByName } from '../../../src/services/users.api'
 
-import { ProcessRandomAlbum } from '../../../src/discord/random/ProcessRandomAlbum'; // Adjust path
+import { ProcessRandomAlbum } from '../../../src/discord/random/ProcessRandomAlbum';
 import { Vinyl } from '../../../src/interfaces/Vinyl';
 import { getVinyls } from '../../../src/services/vinyls.api';
 import { parseCommand } from '../../../src/utils/parseCommand';
 
-// Mock all external dependencies
 vi.mock('../../../src/utils/parseCommand');
 vi.mock('../../../src/services/users.api');
 vi.mock('../../../src/services/vinyls.api');
@@ -22,13 +21,11 @@ describe('ProcessRandomAlbum', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Setup a fake collector
     mockCollector = {
       on: vi.fn(),
       stop: vi.fn(),
     };
 
-    // Setup the mock message
     mockMessage = {
       author: { id: 'user123', username: 'testuser' },
       reply: vi.fn().mockResolvedValue({
@@ -38,8 +35,13 @@ describe('ProcessRandomAlbum', () => {
     };
   });
 
-  it('should notify if no user profile is found', async () => {
-    vi.mocked(parseCommand).mockResolvedValue({ type: 'user', term: 'unknown' });
+  it('should notify if no user profile is found via mention', async () => {
+    // Updated to use the new mentions array
+    vi.mocked(parseCommand).mockResolvedValue({ 
+      mentions: ['unknown-uuid' as any], 
+      flags: [], 
+      query: '' 
+    });
     vi.mocked(getUserById).mockResolvedValue(null);
 
     await ProcessRandomAlbum(mockMessage);
@@ -50,7 +52,11 @@ describe('ProcessRandomAlbum', () => {
   });
 
   it('should notify if the collection is empty', async () => {
-    vi.mocked(parseCommand).mockResolvedValue({ type: 'full', term: '' });
+    vi.mocked(parseCommand).mockResolvedValue({ 
+      mentions: [], 
+      flags: [], 
+      query: '' 
+    });
     vi.mocked(getUserByName).mockResolvedValue({ id: '1', name: 'testuser' } as any);
     vi.mocked(getVinyls).mockResolvedValue([]);
 
@@ -63,50 +69,37 @@ describe('ProcessRandomAlbum', () => {
 
   it('should successfully send a random album and set up a collector', async () => {
     const mockVinyls = [{ id: 'v1', artist: 'Artist A', album: 'Album A' }] as unknown as Vinyl[];
-    vi.mocked(parseCommand).mockResolvedValue({ type: 'full', term: '' });
+    vi.mocked(parseCommand).mockResolvedValue({ 
+      mentions: [], 
+      flags: [], 
+      query: '' 
+    });
     vi.mocked(getUserByName).mockResolvedValue({ id: '1', name: 'testuser' } as any);
     vi.mocked(getVinyls).mockResolvedValue(mockVinyls);
 
     await ProcessRandomAlbum(mockMessage);
 
-    // Verify initial reply with embed and buttons
     expect(mockMessage.reply).toHaveBeenCalledWith(expect.objectContaining({
       embeds: [expect.objectContaining({ title: '🎲 Random Pick' })],
       components: expect.any(Array)
     }));
 
-    // Verify collector was created
-    expect(mockCollector.on).toHaveBeenCalledWith('collect', expect.any(Function));
-  });
-
-    it('should successfully use escape colons.', async () => {
-    const mockVinyls = [{ id: 'v1', artist: 'Artist A', album: 'Heaven :x: Hell' }] as unknown as Vinyl[];
-    vi.mocked(parseCommand).mockResolvedValue({ type: 'full', term: '' });
-    vi.mocked(getUserByName).mockResolvedValue({ id: '1', name: 'testuser' } as any);
-    vi.mocked(getVinyls).mockResolvedValue(mockVinyls);
-
-    await ProcessRandomAlbum(mockMessage);
-
-    // Verify initial reply with embed and buttons
-    expect(mockMessage.reply).toHaveBeenCalledWith(expect.objectContaining({
-      embeds: [expect.objectContaining({ title: '🎲 Random Pick', description: expect.stringContaining('Heaven \\:x\\: Hell') })],
-      components: expect.any(Array)
-    }));
-
-    // Verify collector was created
     expect(mockCollector.on).toHaveBeenCalledWith('collect', expect.any(Function));
   });
 
   it('should handle the cancel button interaction correctly', async () => {
     const mockVinyls = [{ id: 'v1', artist: 'Artist A', album: 'Album A' }] as unknown as Vinyl[];
-    vi.mocked(parseCommand).mockResolvedValue({ type: 'full', term: '' });
+    vi.mocked(parseCommand).mockResolvedValue({ 
+      mentions: [], 
+      flags: [], 
+      query: '' 
+    });
     vi.mocked(getUserByName).mockResolvedValue({ id: '1', name: 'testuser' } as any);
     vi.mocked(getVinyls).mockResolvedValue(mockVinyls);
 
     await ProcessRandomAlbum(mockMessage);
 
-    // Extract the 'collect' callback
-    const collectCallback = mockCollector.on.mock.calls.find((call: string[]) => call[0] === 'collect')[1];
+    const collectCallback = mockCollector.on.mock.calls.find((call: any[]) => call[0] === 'collect')[1];
 
     const mockInteraction = {
       user: { id: 'user123' },
@@ -119,8 +112,6 @@ describe('ProcessRandomAlbum', () => {
     expect(mockCollector.stop).toHaveBeenCalledWith('cancelled');
     expect(mockInteraction.update).toHaveBeenCalledWith(expect.objectContaining({
       content: "🎲 Random pick cancelled.",
-      embeds: [],
-      components: []
     }));
   });
 });

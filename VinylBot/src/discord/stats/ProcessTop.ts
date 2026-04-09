@@ -11,24 +11,23 @@ export const ProcessTop = async (message: Message) => {
   try {
     const context = await parseCommand(message);
     if (!context) return;
+    const {mentions, query} = context;
 
-    let { type, term } = context;
-    const trimmedTerm = term?.trim() ?? "";
-
-    if (type !== "user" && trimmedTerm !== "") {
-      await message.reply(
-        "❌ Invalid usage. Mention a user or leave the command empty."
-      );
+    if (mentions.length > 1) {
+      await message.reply("❌ Invalid usage. Please mention only one user or leave the command empty.");
+      return;
+    } else if (query) {
+      await message.reply("❌ Invalid usage. This command does not accept search queries. Please mention a user or leave the command empty.");
       return;
     }
 
     let list: AlbumCount[] = [];
     let titleSuffix = "";
 
-    if (type === "user") {
+    if (mentions.length === 1) {
       const [userName, userList] = await Promise.all([
-        getNameById(term),
-        getArtistVinylCountByUserId(term),
+        getNameById(mentions[0]),
+        getArtistVinylCountByUserId(mentions[0]),
       ]);
 
       list = userList;

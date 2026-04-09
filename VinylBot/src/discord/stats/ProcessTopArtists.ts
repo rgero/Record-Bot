@@ -9,13 +9,11 @@ export const ProcessTopArtists = async (message: Message) => {
   try {
     const context = await parseCommand(message);
     if (!context) return;
-    let { type, term } = context;
-
-    console.log(type, term);
+    let { mentions } = context;
 
     let list: ArtistCount[] = [];
-    if (type === "user") {
-      list = await getTopArtistsByPlay(term);
+    if (mentions.length === 1) {
+      list = await getTopArtistsByPlay(mentions[0]);
     } else {
       list = await getTopArtistsByPlay();
     }

@@ -1,12 +1,11 @@
 import * as dropdownUtils from '../../src/utils/discordToDropdown';
 import * as userMapService from '../../src/utils/resolveUserMap';
 
+import { Collection, User } from 'discord.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Collection } from 'discord.js';
 import { parseCommand } from '../../src/utils/parseCommand';
 
-// 1. Mock the external dependencies
 vi.mock('../../src/utils/resolveUserMap');
 vi.mock('../../src/utils/discordToDropdown');
 
@@ -15,87 +14,67 @@ describe('parseCommand', () => {
     vi.clearAllMocks();
   });
 
-  /**
-   * Helper to create a mock Discord Message.
-   * We cast to 'any' to avoid implementing every single Discord.js Message property.
-   */
   const createMockMessage = (content: string, mentions = new Collection()) => ({
     content,
     mentions: {
-      users: mentions.filter(u => !u.bot) // Simplified version of your filter
-    },
-    reply: vi.fn().mockResolvedValue(null),
+      users: mentions.filter(u => !(u as User).bot)
+    }
   } as any);
 
-  it('should return type "full" when no arguments (only command) are provided', async () => {
+  it('should return empty context when only command is provided', async () => {
     const message = createMockMessage("!have");
+    vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map());
+    
     const result = await parseCommand(message);
     
-    expect(result).toEqual({ type: 'full', term: '' });
+    expect(result).toEqual({ 
+      mentions: [], 
+      flags: [], 
+      query: "" 
+    });
   });
 
-  it('should return type "user" when a valid mention is provided and exists in the map', async () => {
+  it('should extract mentions and scrub them from the query', async () => {
     const mockDbId = 'db-uuid-123';
     const mockUser = { username: 'Alice', bot: false };
-    
-    // Setup Mentions Collection
     const mentions = new Collection<string, any>();
     mentions.set('123', mockUser);
     
-    // Mock getDropdownValue to return a predictable key
-    vi.mocked(dropdownUtils.getDropdownValue).mockReturnValue('alice-transformed');
-    
-    // Setup the User Map to match that transformed key
-    const mockMap = new Map();
-    mockMap.set('alice-transformed', [mockDbId]); 
+    vi.mocked(dropdownUtils.getDropdownValue).mockReturnValue('alice');
+    const mockMap = new Map().set('alice', [mockDbId]);
     vi.mocked(userMapService.resolveUserMap).mockResolvedValue(mockMap);
 
-    const message = createMockMessage("!have @Alice", mentions);
+    // Discord message content usually contains the raw mention string <@123>
+    const message = createMockMessage("!have <@123> Pink Floyd", mentions);
     const result = await parseCommand(message);
 
-    expect(result).toEqual({ type: 'user', term: mockDbId });
+    expect(result?.mentions).toContain(mockDbId);
+    expect(result?.query).toBe("Pink Floyd");
   });
 
-  it('should return undefined and reply if a mention is not in the database', async () => {
-    const mockUser = { username: 'FakeUser', bot: false };
+  it('should extract flags and scrub them from the query', async () => {
+    vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map());
+    const message = createMockMessage("!have Dark Side --vinyl —cd");
+    const result = await parseCommand(message);
+
+    expect(result?.flags).toEqual(['vinyl', 'cd']);
+    expect(result?.query).toBe("Dark Side");
+  });
+
+  it('should handle complex mixed inputs', async () => {
     const mentions = new Collection<string, any>();
-    mentions.set('456', mockUser);
+    mentions.set('123', { username: 'Alice', bot: false });
+    
+    vi.mocked(dropdownUtils.getDropdownValue).mockReturnValue('alice');
+    vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map().set('alice', ['uuid-123']));
 
-    vi.mocked(dropdownUtils.getDropdownValue).mockReturnValue('fakeuser');
-    vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map()); // Empty map
-
-    const message = createMockMessage("!have @FakeUser", mentions);
+    const message = createMockMessage("!stats <@123> --detailed Radiohead", mentions);
     const result = await parseCommand(message);
 
-    expect(result).toBeUndefined();
-    expect(message.reply).toHaveBeenCalledWith(
-      expect.stringContaining("I couldn't find a database entry for **FakeUser**")
-    );
-  });
-
-  it('should return type "search" for general text queries (no mentions)', async () => {
-    const message = createMockMessage("!have Dark Side of the Moon");
-    const result = await parseCommand(message);
-
-    expect(result).toEqual({ type: 'search', term: 'Dark Side of the Moon' });
-  });
-
-  it('should return undefined and reply if multiple users are mentioned', async () => {
-    const mentions = new Collection<string, any>();
-    mentions.set('1', { username: 'User1', bot: false });
-    mentions.set('2', { username: 'User2', bot: false });
-
-    const message = createMockMessage("!have @User1 @User2", mentions);
-    const result = await parseCommand(message);
-
-    expect(result).toBeUndefined();
-    expect(message.reply).toHaveBeenCalledWith("⚠️ Only one user can be mentioned at this time.");
-  });
-
-  it('should handle search queries with spaces correctly', async () => {
-    const message = createMockMessage("!want Radiohead - Kid A");
-    const result = await parseCommand(message);
-
-    expect(result).toEqual({ type: 'search', term: 'Radiohead - Kid A' });
+    expect(result).toEqual({
+      mentions: ['uuid-123'],
+      flags: ['detailed'],
+      query: 'Radiohead'
+    });
   });
 });

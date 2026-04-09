@@ -60,19 +60,21 @@ export const ProcessRandomAlbum = async (message: Message) => {
     const context = await parseCommand(message);
     if (!context) return;
 
+    const { mentions, flags, query } = context;
+
     let targetUser: User | null = null;
     let vinyls: SearchResponse[] = [];
 
-    if (context.type === "user") {
-      targetUser = await getUserById(context.term); 
+    if (mentions.length === 1) {
+      targetUser = await getUserById(mentions[0]); 
       if (targetUser) {
-        vinyls = (await getVinylsLikedByUserID(targetUser.id)) as SearchResponse[];
+        vinyls = (await getVinylsLikedByUserID(mentions[0])) as SearchResponse[];
       }
-    } else if (context.type === "flag" && context.term.toLowerCase() === "unplayed") {
+    } else if (flags.indexOf("unplayed") !== -1) {
       targetUser = await getUserByName(getDropdownValue(message.author.username));
       vinyls = (await getUnplayedVinyls(targetUser!.id)) as SearchResponse[];
-    } else if (context.type === "search") {
-      vinyls = await getVinylsByQuery({ type: "search", term: context.term });
+    } else if (query) {
+      vinyls = await getVinylsByQuery({ type: "search", term: query });
       targetUser = await getUserByName(getDropdownValue(message.author.username));
     } else {
       vinyls = (await getVinyls()) as SearchResponse[];
@@ -84,7 +86,7 @@ export const ProcessRandomAlbum = async (message: Message) => {
     }
 
     if (!vinyls || vinyls.length === 0) {
-      const msg = context.type === "search" ? `❌ No entries found matching "${context.term}".` : "❌ The requested collection is empty.";
+      const msg = query ? `❌ No entries found matching "${query}".` : "❌ The requested collection is empty.";
       return message.reply(msg);
     }
 

@@ -11,14 +11,14 @@ export const ProcessTopLocation = async (message: Message) => {
   try {
     const context = await parseCommand(message);
     if (!context) return;
-    let { type, term } = context;
+    let { mentions } = context;
     
     let list: AlbumCount[] = [];
     let titleSuffix = "";
 
-    if (type === "user")
+    if (mentions.length === 1)
     {
-      const [userName, userList] = await Promise.all([getNameById(term),getLocationsByPurchaseCountForID(term)]);
+      const [userName, userList] = await Promise.all([getNameById(mentions[0]),getLocationsByPurchaseCountForID(mentions[0])]);
       list = userList;
       titleSuffix = `for ${userName}`;
     } else {
