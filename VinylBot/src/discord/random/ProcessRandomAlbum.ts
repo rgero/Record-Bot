@@ -10,10 +10,12 @@ import { escapeColons } from "../../utils/escapeColons.js";
 import { getDropdownValue } from "../../utils/discordToDropdown.js";
 import { parseCommand } from "../../utils/parseCommand.js";
 
-const buildEmbed = (artist: string, album: string) => {
+const buildEmbed = (artist: string, album: string, title?: string) => {
   const description = `🎵 **${artist}**\n💿 *${album}*`;
+  
   return {
-    title: "🎲 Random Pick",
+    // If title exists, add a space then the title; otherwise, add nothing.
+    title: `🎲 Random Pick${title ? ` ${title}` : ""}`,
     description: escapeColons(description),
     color: 0x5865f2,
   };
@@ -65,14 +67,18 @@ export const ProcessRandomAlbum = async (message: Message) => {
     let targetUser: User | null = null;
     let vinyls: SearchResponse[] = [];
 
-    if (mentions.length === 1) {
+    let titleSuffix = "";
+
+    if (flags.indexOf("unplayed") !== -1) {
+      targetUser = await getUserByName(getDropdownValue(message.author.username));
+      vinyls = (await getUnplayedVinyls(targetUser!.id)) as SearchResponse[];
+      titleSuffix = "from Your Unplayed";
+    } else if (mentions.length === 1) {
       targetUser = await getUserById(mentions[0]); 
+      titleSuffix = `liked by ${targetUser ? targetUser.name : "Unknown User"}`;
       if (targetUser) {
         vinyls = (await getVinylsLikedByUserID(mentions[0])) as SearchResponse[];
       }
-    } else if (flags.indexOf("unplayed") !== -1) {
-      targetUser = await getUserByName(getDropdownValue(message.author.username));
-      vinyls = (await getUnplayedVinyls(targetUser!.id)) as SearchResponse[];
     } else if (query) {
       vinyls = await getVinylsByQuery({ type: "search", term: query });
       targetUser = await getUserByName(getDropdownValue(message.author.username));
@@ -92,7 +98,7 @@ export const ProcessRandomAlbum = async (message: Message) => {
 
     let currentVinyl = getRandomVinyl(vinyls);
     const sentMessage = await message.reply({
-      embeds: [buildEmbed(currentVinyl.artist, currentVinyl.album)],
+      embeds: [buildEmbed(currentVinyl.artist, currentVinyl.album, titleSuffix)],
       components: [buildRow({ showPlay: true })],
     });
 
@@ -146,7 +152,7 @@ export const ProcessRandomAlbum = async (message: Message) => {
         }
 
         await interaction.update({
-          embeds: [buildEmbed(currentVinyl.artist, currentVinyl.album)],
+          embeds: [buildEmbed(currentVinyl.artist, currentVinyl.album, titleSuffix)],
           components: [buildRow({ showPlay: true })],
         });
       }

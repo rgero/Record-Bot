@@ -9,6 +9,7 @@ import { ProcessInfo } from "./discord/ProcessInfo.js";
 import { ProcessList } from "./discord/ProcessList.js";
 import { ProcessPlay } from "./discord/ProcessPlay.js";
 import { ProcessRandomAlbum } from "./discord/random/ProcessRandomAlbum.js";
+import { ProcessRandomCommand } from "./discord/random/ProcessRandomCommand.js";
 import { ProcessRandomStore } from "./discord/random/ProcessRandomStore.js";
 import { ProcessTopCommand } from "./discord/stats/ProcessTopCommand.js";
 import { ProcessUnplayed } from "./discord/ProcessUnplayed.js";
@@ -53,12 +54,7 @@ client.on("messageCreate", async (message: Message) => {
       return await ProcessPlay(message);
 
     case "random":
-      switch (args[1]?.toLowerCase()) {
-        case "store":
-          return await ProcessRandomStore(message);
-        default:
-          return await ProcessRandomAlbum(message);
-      }
+      return await ProcessRandomCommand(message);
 
     case "top":
       return await ProcessTopCommand(message);
