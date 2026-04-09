@@ -3,19 +3,30 @@ import { getDropdownValue } from "./discordToDropdown.js";
 import { resolveUserMap } from "./resolveUserMap.js";
 
 export interface CommandContext {
-  type: "full" | "user" | "search" | "unplayed";
+  type: "full" | "user" | "search" | "flag";
   term: string;
 }
 
+export const processString = (input: string): CommandContext|undefined => {
+  const args = input.trim().replace("—", "--");
+
+  // Early Return for flags
+  if (args.toLowerCase().startsWith("--") && !args.includes(" ")) {
+    const flagArgs = args.replace(/--/g, "").trim();
+    return { type: "flag", term: flagArgs };
+  }
+
+  // 2. Handle Search or Full List
+  if (!args) {
+    return { type: "full", term: "" };
+  }
+
+  return { type: "search", term: args };
+};
+
 export const parseCommand = async (message: Message): Promise<CommandContext | undefined> => {
   const words = message.content.split(/\s+/).filter(Boolean);
-  const command = words[0]?.toLowerCase();
   const args = words.slice(1).join(" ").trim().replace("—", "--");
-
-  // Early Return for Unplayed, and future flags
-  if (args.toLowerCase() === "--unplayed" && command === "!random") {
-    return { type: "unplayed", term: "unplayed" };
-  }
 
   // 1. Handle Mentions (User Mode)
   const mentions = message.mentions.users.filter(u => !u.bot);
@@ -39,10 +50,5 @@ export const parseCommand = async (message: Message): Promise<CommandContext | u
     }
   }
 
-  // 2. Handle Search or Full List
-  if (!args) {
-    return { type: "full", term: "" };
-  }
-
-  return { type: "search", term: args };
+  return processString(args);
 };

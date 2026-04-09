@@ -68,7 +68,7 @@ export const ProcessRandomAlbum = async (message: Message) => {
       if (targetUser) {
         vinyls = (await getVinylsLikedByUserID(targetUser.id)) as SearchResponse[];
       }
-    } else if (context.type === "unplayed") {
+    } else if (context.type === "flag" && context.term.toLowerCase() === "unplayed") {
       targetUser = await getUserByName(getDropdownValue(message.author.username));
       vinyls = (await getUnplayedVinyls(targetUser!.id)) as SearchResponse[];
     } else if (context.type === "search") {
