@@ -8,11 +8,9 @@ import { ProcessHelp } from "./discord/ProcessHelp.js";
 import { ProcessInfo } from "./discord/ProcessInfo.js";
 import { ProcessList } from "./discord/ProcessList.js";
 import { ProcessPlay } from "./discord/ProcessPlay.js";
-import { ProcessPlayCount } from "./discord/stats/ProcessPlayCount.js";
 import { ProcessRandomAlbum } from "./discord/random/ProcessRandomAlbum.js";
 import { ProcessRandomStore } from "./discord/random/ProcessRandomStore.js";
-import { ProcessTop } from "./discord/stats/ProcessTop.js";
-import { ProcessTopLocation } from "./discord/stats/ProcessTopLocation.js";
+import { ProcessTopCommand } from "./discord/stats/ProcessTopCommand.js";
 import { ProcessUnplayed } from "./discord/ProcessUnplayed.js";
 import { ProcessWant } from "./discord/ProcessWant.js";
 
@@ -63,14 +61,7 @@ client.on("messageCreate", async (message: Message) => {
       }
 
     case "top":
-      switch (args[1]?.toLowerCase()) {
-        case "plays":
-          return await ProcessPlayCount(message);
-        case "locations":
-          return await ProcessTopLocation(message);
-        default:
-          return await ProcessTop(message);
-      }
+      return await ProcessTopCommand(message);
 
     case "unplayed":
       return await ProcessUnplayed(message);
