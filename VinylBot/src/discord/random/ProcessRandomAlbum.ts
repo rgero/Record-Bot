@@ -2,13 +2,13 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, Message, M
 import { getUnplayedVinyls, getVinyls, getVinylsByQuery, getVinylsByTags, getVinylsLikedByUserID } from "../../services/vinyls.api.js";
 import { getUserById, getUserByName } from "../../services/users.api.js";
 
+import { CommandContext } from "../../utils/parseCommand.js";
 import { PlayLog } from "../../interfaces/PlayLog.js";
 import { SearchResponse } from "../../interfaces/SearchResponse.js";
 import { User } from "../../interfaces/User.js";
 import { addPlayLog } from "../../services/plays.api.js";
 import { escapeColons } from "../../utils/escapeColons.js";
 import { getDropdownValue } from "../../utils/discordToDropdown.js";
-import { parseCommand } from "../../utils/parseCommand.js";
 
 const buildEmbed = (artist: string, album: string, title?: string) => {
   const description = `🎵 **${artist}**\n💿 *${album}*`;
@@ -57,11 +57,8 @@ const getRandomVinyl = (list: SearchResponse[]): SearchResponse => {
   return list[Math.floor(Math.random() * list.length)];
 };
 
-export const ProcessRandomAlbum = async (message: Message) => {
+export const ProcessRandomAlbum = async (message: Message, context: CommandContext) => {
   try {
-    const context = await parseCommand(message);
-    if (!context) return;
-
     const { mentions, flags, query } = context;
 
     let targetUser: User | null = null;
