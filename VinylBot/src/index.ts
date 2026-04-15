@@ -53,8 +53,11 @@ client.on("messageCreate", async (message: Message) => {
     case "play":
       return await ProcessPlay(message);
 
-    case "random":
+    case "r":
       return await ProcessRandomCommand(message);
+
+    case "tag":
+      return await ProcessList(message, "tag");
 
     case "top":
       return await ProcessTopCommand(message);

@@ -91,6 +91,17 @@ export const searchVinyls = async (term: string): Promise<SearchResponse[]> => {
   return data ?? [];
 };
 
+export const getVinylsByTags = async (tags: string[]): Promise<SearchResponse[]> => {
+  tags = tags.map(item => item.trim());
+  const {data, error} = await supabase
+    .from('vinyls')
+    .select('id, artist, album')
+    .contains("tags", tags);
+
+  if (error) throw error;
+  return data ?? [];
+}
+
 /**
  * MUTATIONS
  */

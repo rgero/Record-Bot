@@ -17,6 +17,7 @@ export interface Vinyl {
   likedBy?: string[];
   imageUrl: string;
   doubleLP: boolean;
+  tags?: string[];
 }
 
 export type VinylWithLocation = {

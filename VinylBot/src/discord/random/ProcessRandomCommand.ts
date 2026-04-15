@@ -18,10 +18,12 @@ export const ProcessRandomCommand = async (message: Message) => {
     switch (flag) {
       case "store":
         return await ProcessRandomStore(message);
+      case "tag":
+        return await ProcessRandomAlbum(message);
       case "unplayed":
         return await ProcessRandomAlbum(message);
       default:
-        await message.reply(`⚠️ Unknown flag: **${flag}**. Valid flags are --store and --unplayed.`);
+        await message.reply(`⚠️ Unknown flag: **${flag}**. Valid flags are --store, --tag and --unplayed.`);
         return;
     }
   }

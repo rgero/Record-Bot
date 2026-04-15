@@ -1,12 +1,13 @@
+import { getVinylsByQuery, getVinylsByTags } from "../services/vinyls.api.js";
+
 import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse.js";
 import { Message } from "discord.js";
 import { escapeColons } from "../utils/escapeColons.js";
 import { getNameById } from "../services/users.api.js";
-import { getVinylsByQuery } from "../services/vinyls.api.js";
 import { getWantList } from "../services/wantlist.api.js";
 import { parseCommand } from "../utils/parseCommand.js";
 
-export const ProcessList = async (message: Message, listType: 'want' | 'have') => {
+export const ProcessList = async (message: Message, listType: 'want' | 'have' | 'tag') => {
   let context = await parseCommand(message);
   if (!context) return;
   const { mentions, query } = context;
@@ -27,9 +28,21 @@ export const ProcessList = async (message: Message, listType: 'want' | 'have') =
       term = query;
     }
 
-    const list = listType === 'have' ? await getVinylsByQuery({ type, term }) : await getWantList({ type, term });
+    let list;
+    let listName = "Collection"
+    switch(listType) {
+      case 'have':
+        list = await getVinylsByQuery({ type, term });
+        break;
+      case 'tag':
+        const tagList = term.split(",")
+        list = await getVinylsByTags(tagList);
+        break;
+      default:
+        listName = "Want List"
+        list = await getWantList({type, term})
+    }
 
-    const listName = listType === "want" ? "Want List" : "Collection";
     const title = type === "full" ? `The ${listName}` : `${listName} matches for "${displayTerm}"`;
 
     await EmbeddedResponse({

@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, Message, MessageActionRowComponentBuilder } from "discord.js";
-import { getUnplayedVinyls, getVinyls, getVinylsByQuery, getVinylsLikedByUserID } from "../../services/vinyls.api.js";
+import { getUnplayedVinyls, getVinyls, getVinylsByQuery, getVinylsByTags, getVinylsLikedByUserID } from "../../services/vinyls.api.js";
 import { getUserById, getUserByName } from "../../services/users.api.js";
 
 import { PlayLog } from "../../interfaces/PlayLog.js";
@@ -69,10 +69,13 @@ export const ProcessRandomAlbum = async (message: Message) => {
 
     let titleSuffix = "";
 
+    targetUser = await getUserByName(getDropdownValue(message.author.username));
     if (flags.indexOf("unplayed") !== -1) {
-      targetUser = await getUserByName(getDropdownValue(message.author.username));
       vinyls = (await getUnplayedVinyls(targetUser!.id)) as SearchResponse[];
       titleSuffix = "from Your Unplayed";
+    } else if (flags.indexOf("tag") !== -1) {
+      vinyls = await getVinylsByTags(query.split(','))
+      titleSuffix = "by Tags"
     } else if (mentions.length === 1) {
       targetUser = await getUserById(mentions[0]); 
       titleSuffix = `liked by ${targetUser ? targetUser.name : "Unknown User"}`;
