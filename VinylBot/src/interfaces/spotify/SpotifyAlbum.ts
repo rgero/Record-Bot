@@ -6,7 +6,7 @@ export interface SpotifyAlbum {
   length: number;
   images: { url: string; height: number; width: number }[];
   artists: { name: string }[];
-  tracks: {
+  tracks?: {
     items: SpotifyTrack[];
     next: string | null;
   };

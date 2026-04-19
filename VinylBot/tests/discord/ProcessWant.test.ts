@@ -52,7 +52,14 @@ const spotifyResponse = {
   artists: [{ name: "Some Artist" }],
   images: [{ url: "album-art.jpg" }],
   release_date: "2024-01-01",
-  total_tracks: 12,
+  total_tracks: 2,
+  tracks: {
+    items: [
+      { duration_ms: 180000 }, 
+      { duration_ms: 180000 }
+    ],
+    next: null
+  }
 };
 
 describe("ProcessWant", () => {
