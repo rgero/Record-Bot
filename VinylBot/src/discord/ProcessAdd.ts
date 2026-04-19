@@ -27,11 +27,11 @@ export const ProcessAdd = async (message: Message) => {
       return message.reply("⚠️ User not found in system.");
     }
 
-    const { artists, albumName, albumArt, releaseDate, totalTracks } = spotifyData;
+    const { artists, albumName, albumArt, releaseDate, totalTracks, length } = spotifyData;
 
     const purchaseDate = new Date().toISOString();
 
-    const status = await addVinyl({artist: artists, album: albumName, imageUrl: albumArt,notes, purchaseDate, owners: [userID.id], doubleLP: false});
+    const status = await addVinyl({artist: artists, album: albumName, imageUrl: albumArt,notes, purchaseDate, owners: [userID.id], doubleLP: false, length});
     if (status === "ERROR") {
       return message.reply("❌ System error: Could not save to database.");
     }
@@ -49,7 +49,8 @@ export const ProcessAdd = async (message: Message) => {
         { name: "Release Date", value: releaseDate || "N/A", inline: true },
         { name: "Tracks", value: `${totalTracks || "N/A"}`, inline: true },
         { name: "Added By", value: mappedRequester, inline: true },
-        { name: "Notes", value: notes || "None", inline: false }
+        { name: "Notes", value: notes || "None", inline: false },
+        { name: "Length", value: `${length || "Unknown"}`, inline: false },
       );
 
     await message.reply({ embeds: [embed] });
