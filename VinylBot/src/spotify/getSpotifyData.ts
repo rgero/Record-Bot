@@ -12,12 +12,15 @@ export const getSpotifyData = async (parsed: SpotifyUrl) =>
   const releaseDate = data.release_date;
   const totalTracks = data.total_tracks;
 
-  const totalDurationMs = data.tracks.items.reduce((acc, track) => {
-    return acc + track.duration_ms;
-  }, 0);
+  let totalMinutes = 0;
 
-  const totalMinutes = Math.ceil(totalDurationMs / 60000);
-      
+  if (data.tracks?.items) {
+    const totalDurationMs = data.tracks.items.reduce((acc, track) => {
+      return acc + track.duration_ms;
+    }, 0);
+    totalMinutes = Math.ceil(totalDurationMs / 60000);
+  }
+
   return {
     artists,
     albumName,
