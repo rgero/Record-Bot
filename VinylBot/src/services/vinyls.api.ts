@@ -195,12 +195,36 @@ export const haveVinyl = async (query: {artist: string, album: string}): Promise
   return !!data;
 }
 
-export const getUnplayedVinyls = async (userID: string): Promise<Vinyl[]> => {
-  const { data, error } = await supabase.rpc('get_unplayed_vinyls', { target_user_id: userID}) 
+export const getUnplayedVinyls = async (userID: string, mention?: string, query?: string): Promise<Vinyl[]> => {
+  const { data, error } = await supabase.rpc('get_unplayed_vinyls', { target_user_id: userID });
+
   if (error) {
-    console.error('Error fetching vinyls:', error)
+    console.error('Error fetching vinyls:', error);
     return [];
-  } else {
-    return data as Vinyl[];
   }
-}
+
+  let filteredData: Vinyl[] = data || [];
+
+  // Filter by mention (owner)
+  if (mention) {
+    filteredData = filteredData.filter((item: Vinyl) => 
+      {
+        return Array.isArray(item.owners) && item.owners.includes(mention);
+      }
+    );
+  }
+
+  // Filter by search query
+  if (query) {
+    const lowerQuery = query.toLowerCase();
+    filteredData = filteredData.filter((item: Vinyl) => {
+      return (
+        item.artist.toLowerCase().includes(lowerQuery) || 
+        item.album.toLowerCase().includes(lowerQuery) || 
+        item.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+      );
+    });
+  }
+
+  return filteredData;
+};

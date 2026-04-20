@@ -66,9 +66,14 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
 
     let titleSuffix = "";
 
+    if (mentions && mentions.length > 1)
+    {
+      await message.reply("❌ Can only have 1 mention");
+    }
+
     targetUser = await getUserByName(getDropdownValue(message.author.username));
     if (flags.indexOf("unplayed") !== -1) {
-      vinyls = (await getUnplayedVinyls(targetUser!.id)) as SearchResponse[];
+      vinyls = (await getUnplayedVinyls(targetUser!.id, mentions[0], query)) as SearchResponse[];
       titleSuffix = "from Your Unplayed";
     } else if (flags.indexOf("tag") !== -1) {
       vinyls = await getVinylsByTags(query.split(','))
