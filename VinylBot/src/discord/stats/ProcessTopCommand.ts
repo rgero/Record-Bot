@@ -3,7 +3,7 @@ import { ProcessPlayCount } from "./ProcessPlayCount.js";
 import { ProcessTop } from "./ProcessTop.js";
 import { ProcessTopArtists } from "./ProcessTopArtists.js";
 import { ProcessTopLocation } from "./ProcessTopLocation.js";
-import { parseCommand } from "../../utils/parseCommand.js";
+import { parseCommand } from "#utils/parseCommand.js";
 
 export const ProcessTopCommand = async (message: Message) => {
   const context = await parseCommand(message);

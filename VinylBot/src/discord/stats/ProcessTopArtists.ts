@@ -1,9 +1,9 @@
-import { ArtistCount } from "../../interfaces/ArtistCount.js";
-import { EmbeddedResponse } from "../../utils/discord/EmbeddedResponse.js";
+import { ArtistCount } from "#interfaces/ArtistCount.js";
+import { EmbeddedResponse } from "#utils/discord/EmbeddedResponse.js";
 import { Message } from "discord.js";
-import { escapeColons } from "../../utils/escapeColons.js";
-import { getTopArtistsByPlay } from "../../services/plays.api.js";
-import { parseCommand } from "../../utils/parseCommand.js";
+import { escapeColons } from "#utils/escapeColons.js";
+import { getTopArtistsByPlay } from "#services/plays.api.js";
+import { parseCommand } from "#utils/parseCommand.js";
 
 export const ProcessTopArtists = async (message: Message) => {
   try {

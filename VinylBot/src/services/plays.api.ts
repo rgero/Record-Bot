@@ -1,6 +1,6 @@
-import { AlbumCount } from "../interfaces/AlbumCount.js";
-import { ArtistCount } from "../interfaces/ArtistCount.js";
-import { PlayLog } from "../interfaces/PlayLog.js";
+import { AlbumCount } from "#interfaces/AlbumCount.js";
+import { ArtistCount } from "#interfaces/ArtistCount.js";
+import { PlayLog } from "#interfaces/PlayLog.js";
 import supabase from "./supabase.js";
 
 const aggregateAlbumCounts = (playLogs: any[]): AlbumCount[] => {

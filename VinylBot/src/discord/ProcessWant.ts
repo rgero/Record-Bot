@@ -1,13 +1,13 @@
 import { EmbedBuilder, Message } from "discord.js";
 
-import { SpotifyUrl } from "../interfaces/spotify/SpotifyUrl.js";
-import { addWantedItem } from "../services/wantlist.api.js";
-import { escapeColons } from "../utils/escapeColons.js";
-import { getDropdownValue } from "../utils/discordToDropdown.js";
-import { getSpotifyData } from "../spotify/getSpotifyData.js";
-import { getUserByName } from "../services/users.api.js";
-import { haveVinyl } from "../services/vinyls.api.js";
-import { parseSpotifyUrl } from "../spotify/parseSpotifyUrl.js";
+import { SpotifyUrl } from "#interfaces/spotify/SpotifyUrl.js";
+import { addWantedItem } from "#services/wantlist.api.js";
+import { escapeColons } from "#utils/escapeColons.js";
+import { getDropdownValue } from "#utils/discordToDropdown.js";
+import { getSpotifyData } from "#spotify/getSpotifyData.js";
+import { getUserByName } from "#services/users.api.js";
+import { haveVinyl } from "#services/vinyls.api.js";
+import { parseSpotifyUrl } from "#spotify/parseSpotifyUrl.js";
 
 export const ProcessWant = async (message: Message) => {
   const args = message.content.split(" ").slice(1).join(" ").trim();

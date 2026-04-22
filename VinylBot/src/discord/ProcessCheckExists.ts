@@ -1,14 +1,14 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, Message, MessageActionRowComponentBuilder} from "discord.js";
 
-import { CheckAlbumExistence } from "../discogs/CheckAlbumExistence.js";
-import { DiscogResponse } from "../interfaces/DiscogResponse.js";
-import { SpotifyUrl } from "../interfaces/spotify/SpotifyUrl.js";
-import { addWantedItem } from "../services/wantlist.api.js";
-import { escapeColons } from "../utils/escapeColons.js";
-import { getDropdownValue } from "../utils/discordToDropdown.js";
-import { getSpotifyData } from "../spotify/getSpotifyData.js";
-import { getUserByName } from "../services/users.api.js";
-import { parseSpotifyUrl } from "../spotify/parseSpotifyUrl.js";
+import { CheckAlbumExistence } from "#discogs/CheckAlbumExistence.js";
+import { DiscogResponse } from "#interfaces/DiscogResponse.js";
+import { SpotifyUrl } from "#interfaces/spotify/SpotifyUrl.js";
+import { addWantedItem } from "#services/wantlist.api.js";
+import { escapeColons } from "#utils/escapeColons.js";
+import { getDropdownValue } from "#utils/discordToDropdown.js";
+import { getSpotifyData } from "#spotify/getSpotifyData.js";
+import { getUserByName } from "#services/users.api.js";
+import { parseSpotifyUrl } from "#spotify/parseSpotifyUrl.js";
 
 /**
  * Builds the action row containing the "Want" button.

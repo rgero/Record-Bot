@@ -1,6 +1,6 @@
-import { SpotifyAlbum } from "../interfaces/spotify/SpotifyAlbum.js";
-import { SpotifyUrl } from "../interfaces/spotify/SpotifyUrl.js";
-import { spotifyGet } from "../services/spotify.api.js";
+import { SpotifyAlbum } from "#interfaces/spotify/SpotifyAlbum.js";
+import { SpotifyUrl } from "#interfaces/spotify/SpotifyUrl.js";
+import { spotifyGet } from "#services/spotify.api.js";
 
 export const getSpotifyData = async (parsed: SpotifyUrl) => 
 {

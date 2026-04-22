@@ -1,5 +1,5 @@
-import { User } from "../interfaces/User.js";
-import { getUsers } from "../services/users.api.js";
+import { User } from "#interfaces/User.js";
+import { getUsers } from "#services/users.api.js";
 
 export const resolveUserMap = async (): Promise<Map<string, string[]>> => {
   const userList: User[] = await getUsers();

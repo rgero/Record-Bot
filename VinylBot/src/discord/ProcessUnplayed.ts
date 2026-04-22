@@ -1,11 +1,11 @@
-import { CommandContext, parseCommand } from "../utils/parseCommand.js";
+import { CommandContext, parseCommand } from "#utils/parseCommand.js";
 
-import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse.js";
+import { EmbeddedResponse } from "#utils/discord/EmbeddedResponse.js";
 import { Message } from "discord.js";
-import { escapeColons } from "../utils/escapeColons.js";
-import { getDropdownValue } from "../utils/discordToDropdown.js";
-import { getUnplayedVinyls } from "../services/vinyls.api.js";
-import { resolveUserMap } from "../utils/resolveUserMap.js";
+import { escapeColons } from "#utils/escapeColons.js";
+import { getDropdownValue } from "#utils/discordToDropdown.js";
+import { getUnplayedVinyls } from "#services/vinyls.api.js";
+import { resolveUserMap } from "#utils/resolveUserMap.js";
 
 export const ProcessUnplayed = async (message: Message) => {
     const context = await parseCommand(message);

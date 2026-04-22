@@ -1,14 +1,14 @@
 import { ActionRowBuilder, ComponentType, Message, MessageActionRowComponentBuilder, StringSelectMenuBuilder } from "discord.js";
-import { getVinylID, getVinylsByQuery } from "../services/vinyls.api.js";
+import { getVinylID, getVinylsByQuery } from "#services/vinyls.api.js";
 
-import { PlayLog } from "../interfaces/PlayLog.js";
-import { SearchResponse } from "../interfaces/SearchResponse.js";
-import { addPlayLog } from "../services/plays.api.js";
-import { escapeColons } from "../utils/escapeColons.js";
-import { getDropdownValue } from "../utils/discordToDropdown.js";
-import { getSpotifyData } from "../spotify/getSpotifyData.js";
-import { parseSpotifyUrl } from "../spotify/parseSpotifyUrl.js";
-import { resolveUserMap } from "../utils/resolveUserMap.js";
+import { PlayLog } from "#interfaces/PlayLog.js";
+import { SearchResponse } from "#interfaces/SearchResponse.js";
+import { addPlayLog } from "#services/plays.api.js";
+import { escapeColons } from "#utils/escapeColons.js";
+import { getDropdownValue } from "#utils/discordToDropdown.js";
+import { getSpotifyData } from "#spotify/getSpotifyData.js";
+import { parseSpotifyUrl } from "#spotify/parseSpotifyUrl.js";
+import { resolveUserMap } from "#utils/resolveUserMap.js";
 
 async function resolveVinylId(artist: string, album: string): Promise<number> {
   const vinylId = await getVinylID(artist, album); // Uses vinyls.api.ts
