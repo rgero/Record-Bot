@@ -1,4 +1,4 @@
-import { DiscogResponse } from "#interfaces/DiscogResponse";
+import { DiscogResponse } from "#interfaces/DiscogResponse.js";
 import { DiscogsClient } from "@lionralfs/discogs-client";
 import { compareTwoStrings } from "string-similarity";
 
