@@ -1,11 +1,11 @@
-import { getLocationsByPurchaseCount, getLocationsByPurchaseCountForID } from "#services/locations.api.js";
+import { getLocationsByPurchaseCount, getLocationsByPurchaseCountForID } from "../../services/locations.api.js";
 
-import { AlbumCount } from "#interfaces/AlbumCount.js";
-import { EmbeddedResponse } from "#utils/discord/EmbeddedResponse.js";
+import { AlbumCount } from "../../interfaces/AlbumCount.js";
+import { EmbeddedResponse } from "../../utils/discord/EmbeddedResponse.js";
 import { Message } from "discord.js";
-import { escapeColons } from "#utils/escapeColons.js";
-import { getNameById } from "#services/users.api.js";
-import { parseCommand } from "#utils/parseCommand.js";
+import { escapeColons } from "../../utils/escapeColons.js";
+import { getNameById } from "../../services/users.api.js";
+import { parseCommand } from "../../utils/parseCommand.js";
 
 export const ProcessTopLocation = async (message: Message) => {
   try {

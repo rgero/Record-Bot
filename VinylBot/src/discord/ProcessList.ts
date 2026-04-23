@@ -1,11 +1,11 @@
-import { getVinylsByQuery, getVinylsByTags } from "#services/vinyls.api.js";
+import { getVinylsByQuery, getVinylsByTags } from "../services/vinyls.api.js";
 
-import { EmbeddedResponse } from "#utils/discord/EmbeddedResponse.js";
+import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse.js";
 import { Message } from "discord.js";
-import { escapeColons } from "#utils/escapeColons.js";
-import { getNameById } from "#services/users.api.js";
-import { getWantList } from "#services/wantlist.api.js";
-import { parseCommand } from "#utils/parseCommand.js";
+import { escapeColons } from "../utils/escapeColons.js";
+import { getNameById } from "../services/users.api.js";
+import { getWantList } from "../services/wantlist.api.js";
+import { parseCommand } from "../utils/parseCommand.js";
 
 export const ProcessList = async (message: Message, listType: 'want' | 'have' | 'tag') => {
   let context = await parseCommand(message);

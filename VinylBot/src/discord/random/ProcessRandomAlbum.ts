@@ -1,14 +1,14 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, Message, MessageActionRowComponentBuilder } from "discord.js";
-import { getUnplayedVinyls, getVinyls, getVinylsByQuery, getVinylsByTags, getVinylsLikedByUserID } from "#services/vinyls.api.js";
-import { getUserById, getUserByName } from "#services/users.api.js";
+import { getUnplayedVinyls, getVinyls, getVinylsByQuery, getVinylsByTags, getVinylsLikedByUserID } from "../../services/vinyls.api.js";
+import { getUserById, getUserByName } from "../../services/users.api.js";
 
-import { CommandContext } from "#utils/parseCommand.js";
-import { PlayLog } from "#interfaces/PlayLog.js";
-import { SearchResponse } from "#interfaces/SearchResponse.js";
-import { User } from "#interfaces/User.js";
-import { addPlayLog } from "#services/plays.api.js";
-import { escapeColons } from "#utils/escapeColons.js";
-import { getDropdownValue } from "#utils/discordToDropdown.js";
+import { CommandContext } from "../../utils/parseCommand.js";
+import { PlayLog } from "../../interfaces/PlayLog.js";
+import { SearchResponse } from "../../interfaces/SearchResponse.js";
+import { User } from "../../interfaces/User.js";
+import { addPlayLog } from "../../services/plays.api.js";
+import { escapeColons } from "../../utils/escapeColons.js";
+import { getDropdownValue } from "../../utils/discordToDropdown.js";
 
 const buildEmbed = (artist: string, album: string, title?: string) => {
   const description = `🎵 **${artist}**\n💿 *${album}*`;

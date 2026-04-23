@@ -11,14 +11,6 @@
     "test": "vitest",
     "test:run": "vitest run"
   },
-  "imports": {
-    "#discogs/*": "./src/discogs/*",
-    "#discord/*": "./src/discord/*",
-    "#interfaces/*": "./src/interfaces/*",
-    "#services/*": "./src/services/*",
-    "#spotify/*": "./src/spotify/*",
-    "#utils/*": "./src/utils/*"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -1,4 +1,4 @@
-import { SpotifyUrl } from "#interfaces/spotify/SpotifyUrl.js";
+import { SpotifyUrl } from "../interfaces/spotify/SpotifyUrl.js";
 
 export const parseSpotifyUrl = (text: string): SpotifyUrl|null => {
   const match = text.match(

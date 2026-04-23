@@ -1,6 +1,6 @@
-import { AlbumCount } from "#interfaces/AlbumCount.js";
-import { SearchResponse } from "#interfaces/SearchResponse.js";
-import { Vinyl } from "#interfaces/Vinyl.js";
+import { AlbumCount } from "../interfaces/AlbumCount.js";
+import { SearchResponse } from "../interfaces/SearchResponse.js";
+import { Vinyl } from "../interfaces/Vinyl.js";
 import supabase from "./supabase.js";
 
 /**

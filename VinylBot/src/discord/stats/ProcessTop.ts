@@ -1,11 +1,11 @@
-import { getArtistVinylCountByUserId, getArtistVinylCounts } from "#services/vinyls.api.js";
+import { getArtistVinylCountByUserId, getArtistVinylCounts } from "../../services/vinyls.api.js";
 
-import { AlbumCount } from "#interfaces/AlbumCount.js";
-import { EmbeddedResponse } from "#utils/discord/EmbeddedResponse.js";
+import { AlbumCount } from "../../interfaces/AlbumCount.js";
+import { EmbeddedResponse } from "../../utils/discord/EmbeddedResponse.js";
 import { Message } from "discord.js";
-import { escapeColons } from "#utils/escapeColons.js";
-import { getNameById } from "#services/users.api.js";
-import { parseCommand } from "#utils/parseCommand.js";
+import { escapeColons } from "../../utils/escapeColons.js";
+import { getNameById } from "../../services/users.api.js";
+import { parseCommand } from "../../utils/parseCommand.js";
 
 export const ProcessTop = async (message: Message) => {
   try {

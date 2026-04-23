@@ -1,9 +1,9 @@
 import {ActionRowBuilder, ComponentType, EmbedBuilder, Message, StringSelectMenuBuilder} from "discord.js";
 
-import type { Vinyl } from "#interfaces/Vinyl.js";
-import { escapeColons } from "#utils/escapeColons.js";
-import { getFullVinylsByQuery } from "#services/vinyls.api.js";
-import { getUserById } from "#services/users.api.js";
+import type { Vinyl } from "../interfaces/Vinyl.js";
+import { escapeColons } from "../utils/escapeColons.js";
+import { getFullVinylsByQuery } from "../services/vinyls.api.js";
+import { getUserById } from "../services/users.api.js";
 
 const limit = (str: string | undefined | null, max: number) => {
   if (!str) return "—";

@@ -1,5 +1,5 @@
-import { SearchResponse } from "#interfaces/SearchResponse.js";
-import { WantedItem } from "#interfaces/WantedItem.js";
+import { SearchResponse } from "../interfaces/SearchResponse.js";
+import { WantedItem } from "../interfaces/WantedItem.js";
 import supabase from "./supabase.js";
 
 /* Get the Wanted Items*/

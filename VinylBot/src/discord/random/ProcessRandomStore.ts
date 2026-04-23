@@ -1,8 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, Message, MessageActionRowComponentBuilder } from "discord.js";
 
-import { Location } from "#interfaces/Location.js";
-import { escapeColons } from "#utils/escapeColons.js";
-import { getPhysicalLocations } from "#services/locations.api.js"
+import { Location } from "../../interfaces/Location.js";
+import { escapeColons } from "../../utils/escapeColons.js";
+import { getPhysicalLocations } from "../../services/locations.api.js"
 
 const buildEmbed = (storeName: string, address: string|null) => {
   const description = `**${storeName}**\n${address || "Address not available"}`;

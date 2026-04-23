@@ -1,11 +1,11 @@
-import { getSortedPlaysByQuery, getTopPlayedAlbumsByUserID } from "#services/plays.api.js";
+import { getSortedPlaysByQuery, getTopPlayedAlbumsByUserID } from "../../services/plays.api.js";
 
-import { EmbeddedResponse } from "#utils/discord/EmbeddedResponse.js";
+import { EmbeddedResponse } from "../../utils/discord/EmbeddedResponse.js";
 import { Message } from "discord.js";
-import { escapeColons } from "#utils/escapeColons.js";
-import { getNameById } from "#services/users.api.js";
-import { getVinylsByPlayCount } from "#services/vinyls.api.js";
-import { parseCommand } from "#utils/parseCommand.js";
+import { escapeColons } from "../../utils/escapeColons.js";
+import { getNameById } from "../../services/users.api.js";
+import { getVinylsByPlayCount } from "../../services/vinyls.api.js";
+import { parseCommand } from "../../utils/parseCommand.js";
 
 export const ProcessPlayCount = async (message: Message) => {
   try {

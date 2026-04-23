@@ -1,6 +1,6 @@
-import { AlbumCount } from "#interfaces/AlbumCount.js";
-import { Location } from "#interfaces/Location.js";
-import { VinylWithLocation } from "#interfaces/Vinyl.js";
+import { AlbumCount } from "../interfaces/AlbumCount.js";
+import { Location } from "../interfaces/Location.js";
+import { VinylWithLocation } from "../interfaces/Vinyl.js";
 import supabase from "./supabase.js";
 
 export const getLocations = async (): Promise<Location[]> => {

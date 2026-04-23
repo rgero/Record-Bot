@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
-import { getAlbumArtFromSpotify } from "#services/spotify.api.js";
-import supabase from "#services/supabase.js";
+import { getAlbumArtFromSpotify } from "../services/spotify.api.js";
+import supabase from "../services/supabase.js";
 
 export async function populateAlbumArt(): Promise<void>
 {

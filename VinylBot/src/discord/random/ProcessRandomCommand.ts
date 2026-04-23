@@ -1,7 +1,7 @@
 import { Message } from "discord.js";
 import { ProcessRandomAlbum } from "./ProcessRandomAlbum.js";
 import { ProcessRandomStore } from "./ProcessRandomStore.js";
-import { parseCommand } from "#utils/parseCommand.js";
+import { parseCommand } from "../../utils/parseCommand.js";
 
 export const ProcessRandomCommand = async (message: Message) => {
   const context = await parseCommand(message);
