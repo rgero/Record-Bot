@@ -26,8 +26,8 @@ export const getVinylsLikedByUserID = async (userID: string): Promise<Vinyl[]> =
   return data ?? [];
 };
 
-export const getVinylsByQuery = async (query: { type: string; term: string }): Promise<Vinyl[]> => {
-  let dbQuery = supabase.from('vinyls').select('*');
+export const getVinylsByQuery = async (query: { type: string; term: string }): Promise<SearchResponse[]> => {
+  let dbQuery = supabase.from('vinyls').select('id, artist, album');
 
   if (query.type === 'user') {
     dbQuery = dbQuery.contains('owners', [query.term]);
@@ -91,11 +91,11 @@ export const searchVinyls = async (term: string): Promise<SearchResponse[]> => {
   return data ?? [];
 };
 
-export const getVinylsByTags = async (tags: string[]): Promise<Vinyl[]> => {
+export const getVinylsByTags = async (tags: string[]): Promise<SearchResponse[]> => {
   tags = tags.map(item => item.trim());
   const {data, error} = await supabase
     .from('vinyls')
-    .select('*')
+    .select('id, artist, album')
     .contains("tags", tags);
 
   if (error) throw error;

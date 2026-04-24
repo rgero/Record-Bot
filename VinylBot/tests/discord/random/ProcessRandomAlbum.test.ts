@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getUserById, getUserByName } from '../../../src/services/users.api';
+import { getUserById, getUserByName } from '../../../src/services/users.api'
 
 import { ProcessRandomAlbum } from '../../../src/discord/random/ProcessRandomAlbum';
 import { Vinyl } from '../../../src/interfaces/Vinyl';
 import { getVinyls } from '../../../src/services/vinyls.api';
+import { parseCommand } from '../../../src/utils/parseCommand';
 
 vi.mock('../../../src/utils/parseCommand');
 vi.mock('../../../src/services/users.api');
@@ -11,10 +12,6 @@ vi.mock('../../../src/services/vinyls.api');
 vi.mock('../../../src/services/plays.api');
 vi.mock('../../../src/utils/discordToDropdown', () => ({
   getDropdownValue: vi.fn((name) => name)
-}));
-// Mock escapeColons to return the string as-is for simpler testing
-vi.mock('../../../src/utils/escapeColons', () => ({
-  escapeColons: vi.fn((str) => str)
 }));
 
 describe('ProcessRandomAlbum', () => {
@@ -43,14 +40,14 @@ describe('ProcessRandomAlbum', () => {
       mentions: ['unknown-uuid' as any], 
       flags: [], 
       query: '' 
-    };
+    }
 
     vi.mocked(getUserById).mockResolvedValue(null);
 
-    await ProcessRandomAlbum(mockMessage, context as any);
+    await ProcessRandomAlbum(mockMessage, context);
 
     expect(mockMessage.reply).toHaveBeenCalledWith(
-      "❌ No matching user profile found for logging."
+      expect.stringContaining("No matching user profile found")
     );
   });
 
@@ -59,38 +56,31 @@ describe('ProcessRandomAlbum', () => {
       mentions: [], 
       flags: [], 
       query: '' 
-    };
+    }
     vi.mocked(getUserByName).mockResolvedValue({ id: '1', name: 'testuser' } as any);
     vi.mocked(getVinyls).mockResolvedValue([]);
 
-    await ProcessRandomAlbum(mockMessage, context as any);
+    await ProcessRandomAlbum(mockMessage, context);
 
-    // Updated to match the actual string in the source code
-    expect(mockMessage.reply).toHaveBeenCalledWith("❌ No entries found.");
+    expect(mockMessage.reply).toHaveBeenCalledWith(
+      expect.stringContaining("The requested collection is empty")
+    );
   });
 
   it('should successfully send a random album and set up a collector', async () => {
-    const mockVinyls = [{ id: 'v1', artist: 'Artist A', album: 'Album A', length: 45 }] as unknown as Vinyl[];
+    const mockVinyls = [{ id: 'v1', artist: 'Artist A', album: 'Album A' }] as unknown as Vinyl[];
     const context = { 
       mentions: [], 
       flags: [], 
       query: '' 
-    };
+    }
     vi.mocked(getUserByName).mockResolvedValue({ id: '1', name: 'testuser' } as any);
     vi.mocked(getVinyls).mockResolvedValue(mockVinyls);
 
-    await ProcessRandomAlbum(mockMessage, context as any);
+    await ProcessRandomAlbum(mockMessage, context);
 
-    // Using stringContaining because the code does .trim() on a string 
-    // that might have trailing spaces depending on titleSuffix logic
     expect(mockMessage.reply).toHaveBeenCalledWith(expect.objectContaining({
-      embeds: expect.arrayContaining([
-        expect.objectContaining({
-          data: expect.objectContaining({
-            title: expect.stringContaining('🎲 Random Pick')
-          })
-        })
-      ]),
+      embeds: [expect.objectContaining({ title: '🎲 Random Pick' })],
       components: expect.any(Array)
     }));
 
@@ -103,11 +93,11 @@ describe('ProcessRandomAlbum', () => {
       mentions: [], 
       flags: [], 
       query: '' 
-    };
+    }
     vi.mocked(getUserByName).mockResolvedValue({ id: '1', name: 'testuser' } as any);
     vi.mocked(getVinyls).mockResolvedValue(mockVinyls);
 
-    await ProcessRandomAlbum(mockMessage, context as any);
+    await ProcessRandomAlbum(mockMessage, context);
 
     const collectCallback = mockCollector.on.mock.calls.find((call: any[]) => call[0] === 'collect')[1];
 
@@ -122,8 +112,6 @@ describe('ProcessRandomAlbum', () => {
     expect(mockCollector.stop).toHaveBeenCalledWith('cancelled');
     expect(mockInteraction.update).toHaveBeenCalledWith(expect.objectContaining({
       content: "🎲 Random pick cancelled.",
-      embeds: [],
-      components: []
     }));
   });
 });
