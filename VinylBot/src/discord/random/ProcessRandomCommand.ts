@@ -23,5 +23,5 @@ export const ProcessRandomCommand = async (message: Message) => {
     }
   }
 
-
+  return await ProcessRandomAlbum(message, context);
 }
