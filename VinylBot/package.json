@@ -27,6 +27,7 @@
   "devDependencies": {
     "@types/node": "^25.0.2",
     "@types/string-similarity": "^4.0.2",
+    "csv-parse": "^6.2.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
