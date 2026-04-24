@@ -37,3 +37,6 @@ There are three flavors of this one
   - If there is an artist - it returns the top albums played for that artist.
 - `!top locations` - Returns the locations sorted by album count. Just to see if which stores sold us the most albums.
   - This will have a user variant in the future.  
+
+### Unplayed
+- `!unplayed` - Shows your unplayed albums
