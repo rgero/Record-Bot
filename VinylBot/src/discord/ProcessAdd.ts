@@ -49,8 +49,8 @@ export const ProcessAdd = async (message: Message) => {
         { name: "Release Date", value: releaseDate || "N/A", inline: true },
         { name: "Tracks", value: `${totalTracks || "N/A"}`, inline: true },
         { name: "Added By", value: mappedRequester, inline: true },
-        { name: "Notes", value: notes || "None", inline: false },
-        { name: "Length", value: `${length || "Unknown"}`, inline: false },
+        { name: "Length", value: `${length || "Unknown"}`, inline: true },
+        { name: "Notes", value: notes || "None", inline: true },
       );
 
     await message.reply({ embeds: [embed] });
