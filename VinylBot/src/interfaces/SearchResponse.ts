@@ -5,4 +5,5 @@ export interface SearchResponse
   album: string;
   owners?: string[];
   searcher?: string[];
+  length?: number;
 }

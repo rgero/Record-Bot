@@ -10,14 +10,20 @@ import { addPlayLog } from "../../services/plays.api.js";
 import { escapeColons } from "../../utils/escapeColons.js";
 import { getDropdownValue } from "../../utils/discordToDropdown.js";
 
-const buildEmbed = (artist: string, album: string, title?: string) => {
-  const description = `🎵 **${artist}**\n💿 *${album}*`;
-  
+const buildEmbed = (currentVinyl: SearchResponse, title?: string) => {
   return {
-    // If title exists, add a space then the title; otherwise, add nothing.
     title: `🎲 Random Pick${title ? ` ${title}` : ""}`,
-    description: escapeColons(description),
     color: 0x5865f2,
+    fields: [
+      {
+        name: `${escapeColons(currentVinyl.artist)}`,
+        value: `${escapeColons(currentVinyl.album)}`,
+        inline: true,
+      },
+      ...(currentVinyl.length 
+        ? [{ name: "⏱️ Length", value: `${currentVinyl.length} min`, inline: false }] 
+        : [])
+    ],
   };
 };
 
@@ -103,7 +109,7 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
 
     let currentVinyl = getRandomVinyl(vinyls);
     const sentMessage = await message.reply({
-      embeds: [buildEmbed(currentVinyl.artist, currentVinyl.album, titleSuffix)],
+      embeds: [buildEmbed(currentVinyl, titleSuffix)],
       components: [buildRow({ showPlay: true })],
     });
 
@@ -157,7 +163,7 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
         }
 
         await interaction.update({
-          embeds: [buildEmbed(currentVinyl.artist, currentVinyl.album, titleSuffix)],
+          embeds: [buildEmbed(currentVinyl, titleSuffix)],
           components: [buildRow({ showPlay: true })],
         });
       }

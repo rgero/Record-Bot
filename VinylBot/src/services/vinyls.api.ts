@@ -84,7 +84,7 @@ export const getVinylByDetails = async (artist: string, album: string): Promise<
 export const searchVinyls = async (term: string): Promise<SearchResponse[]> => {
   const { data, error } = await supabase
     .from('vinyls')
-    .select('id, artist, album')
+    .select('id, artist, album, length')
     .or(`artist.ilike.%${term}%,album.ilike.%${term}%`);
 
   if (error) throw error;
