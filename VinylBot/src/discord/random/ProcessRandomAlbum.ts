@@ -78,11 +78,11 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
     }
 
     targetUser = await getUserByName(getDropdownValue(message.author.username));
-    if (flags.indexOf("unplayed") !== -1) {
+    if (flags.unplayed) {
       vinyls = (await getUnplayedVinyls(targetUser!.id, mentions[0], query)) as SearchResponse[];
       titleSuffix = "from Your Unplayed";
-    } else if (flags.indexOf("tag") !== -1) {
-      vinyls = await getVinylsByTags(query.split(','))
+    } else if (flags.tags) {
+      vinyls = await getVinylsByTags(flags.tags.toString().split(','))
       titleSuffix = "by Tags"
     } else if (mentions.length === 1) {
       targetUser = await getUserById(mentions[0]); 
