@@ -1,52 +1,74 @@
 import { CommandContext, parseCommand } from "../utils/parseCommand.js";
+import { getUnplayedVinylCounts, getUnplayedVinyls } from "../services/vinyls.api.js";
 
 import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse.js";
 import { Message } from "discord.js";
+import { UUID } from "node:crypto";
 import { escapeColons } from "../utils/escapeColons.js";
 import { getDropdownValue } from "../utils/discordToDropdown.js";
-import { getUnplayedVinyls } from "../services/vinyls.api.js";
+import { getNameById } from "../services/users.api.js";
 import { resolveUserMap } from "../utils/resolveUserMap.js";
 
 export const ProcessUnplayed = async (message: Message) => {
-    const context = await parseCommand(message);
-    if (!context) return;  
+  const context: CommandContext|undefined = await parseCommand(message);
+  if (!context) return;
+
+  const { mentions, query, flags } = context;
+  const userMap = await resolveUserMap();
   
-    const userMap = await resolveUserMap();
-    const requesterName = getDropdownValue(message.author.username).toLowerCase();
-    const requesterIds = userMap.get(requesterName);
+  const requesterName = getDropdownValue(message.author.username).toLowerCase();
+  const requesterIds = userMap.get(requesterName) as UUID[] | undefined;
 
-    const {mentions, query} = context;
+  const targetIDs: UUID[] = (mentions && mentions.length > 0) ? (mentions as UUID[]) : (requesterIds || []);
 
-    if (mentions && mentions.length > 1)
-    {
-      await message.reply("❌ Can only have 1 mention");
-    }
+  if (targetIDs.length === 0) {
+    return message.reply("⚠️ You are not registered or no users were found.");
+  }
 
-    if (!requesterIds) {
-      console.warn(`User ${message.author.username} not found in database.`);
-      return message.reply("⚠️ You are not registered in the system.");
-    }
+  try {
+    if (flags.count) {
+      const rawData = await getUnplayedVinylCounts(targetIDs);
+      const namedData = await Promise.all(
+        rawData.map(async (item) => ({
+          userName: await getNameById(item.user_id), 
+          count: item.unplayed_count
+        }))
+      );
 
-    const userID = requesterIds[0];
-
-    try {
-      const unplayedVinyls = await (await getUnplayedVinyls(userID, mentions[0], query)).sort( (a, b) => a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album) );
-
-      if (unplayedVinyls && unplayedVinyls.length === 0) {
-        return message.reply("🎉 You have no unplayed records! Well done!");
-      }
-
-      // Time to generate the response.
-      await EmbeddedResponse({
+      return await EmbeddedResponse({
         message,
-        title: `Your Unplayed Vinyls (${unplayedVinyls.length} total)`,
-        list: unplayedVinyls,
-        formatItem: (item, idx) => `${idx + 1}. **${escapeColons(item.artist)}** - ${escapeColons(item.album)}`,
+        title: `Unplayed Vinyl Counts`,
+        list: namedData,
+        formatItem: (item, idx) => `${idx + 1}. **${item.userName}** — ${item.count} records`,
         color: 0x3498db,
       });
-
-    } catch (error) { 
-      console.error("Error processing unplayed vinyls:", error);
-      return message.reply("❌ An error occurred while fetching your unplayed records.");
     }
-  };
+
+    if (mentions && mentions.length > 1) {
+      return message.reply("❌ Please mention only one user to see a detailed list.");
+    }
+
+    const userID = targetIDs[0];
+    const data = await getUnplayedVinyls(userID, mentions[0], query);
+
+    if (!data || data.length === 0) {
+      return message.reply("🎉 No unplayed records found!");
+    }
+
+    const sortedVinyls = data.sort((a, b) => 
+      a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album)
+    );
+
+    return await EmbeddedResponse({
+      message,
+      title: `Unplayed Vinyls (${sortedVinyls.length} total)`,
+      list: sortedVinyls,
+      formatItem: (item, idx) => `${idx + 1}. **${escapeColons(item.artist)}** - ${escapeColons(item.album)}`,
+      color: 0x3498db,
+    });
+
+  } catch (error) {
+    console.error("ProcessUnplayed Error:", error);
+    return message.reply("❌ An error occurred while fetching vinyl data.");
+  }
+};

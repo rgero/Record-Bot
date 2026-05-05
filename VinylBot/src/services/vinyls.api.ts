@@ -1,5 +1,7 @@
 import { AlbumCount } from "../interfaces/AlbumCount.js";
 import { SearchResponse } from "../interfaces/SearchResponse.js";
+import { UUID } from "node:crypto";
+import { UnplayedRecord } from "../interfaces/UnplayedRecord.js";
 import { Vinyl } from "../interfaces/Vinyl.js";
 import supabase from "./supabase.js";
 
@@ -228,3 +230,14 @@ export const getUnplayedVinyls = async (userID: string, mention?: string, query?
 
   return filteredData;
 };
+
+export const getUnplayedVinylCounts = async (targetIDs: UUID[]): Promise<UnplayedRecord[]> => {
+  const { data, error } = await supabase.rpc('get_unplayed_counts', { target_user_ids: targetIDs });
+
+  if (error) {
+    console.error('Error fetching vinyls:', error);
+    return [];
+  }
+
+  return data ?? [];
+}
