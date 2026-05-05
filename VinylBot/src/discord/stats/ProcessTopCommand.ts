@@ -8,15 +8,20 @@ import { parseCommand } from "../../utils/parseCommand.js";
 export const ProcessTopCommand = async (message: Message) => {
   const context = await parseCommand(message);
   if (!context) return;
-  const { flags } = context;
 
-  if (flags.length > 1) {
-    await message.reply(`⚠️ Multiple flags detected. Please provide only one flag. Valid flags are --artist, --locations, and --plays.`);
-    return
+  const { flags } = context;
+  const activeFlags = Object.keys(flags).filter(key => flags[key] === true);
+
+  if (activeFlags.length > 1) {
+    await message.reply(
+      `⚠️ Multiple flags detected (**${activeFlags.join(", ")}**). Please provide only one flag at a time.`
+    );
+    return;
   }
 
-  if (flags.length === 1) {
-    const flag = flags[0];
+  if (activeFlags.length === 1) {
+    const flag = activeFlags[0];
+
     switch (flag) {
       case "artist":
         return ProcessTopArtists(message);
@@ -25,10 +30,9 @@ export const ProcessTopCommand = async (message: Message) => {
       case "plays":
         return ProcessPlayCount(message);
       default:
-        await message.reply(`⚠️ Unknown flag: **${flag}**. Valid flags are --artist, --locations, and --plays.`);
+        await message.reply(`⚠️ The flag --**${flag}** is not supported for this command.`);
         return;
     }
-  } else {
-    return ProcessTop(message);
   }
-}
+  return ProcessTop(message);
+};
