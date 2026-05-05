@@ -39,7 +39,7 @@ export const ProcessUnplayed = async (message: Message) => {
         message,
         title: `Unplayed Vinyl Counts`,
         list: namedData,
-        formatItem: (item, idx) => `${idx + 1}. **${item.userName}** — ${item.count} records`,
+        formatItem: (item, idx) => `${idx + 1}. **${item.userName}** - ${item.count} records`,
         color: 0x3498db,
       });
     }
