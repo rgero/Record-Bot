@@ -66,7 +66,5 @@ export const parseCommand = async (message: Message): Promise<CommandContext | u
   }
 
   returnValue.query = queryParts.join(" ").trim();
-  console.log(returnValue);
-
   return returnValue;
 };
