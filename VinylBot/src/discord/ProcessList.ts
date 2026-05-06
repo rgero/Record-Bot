@@ -1,13 +1,14 @@
 import { getVinylsByQuery, getVinylsByTags } from "../services/vinyls.api.js";
 
 import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse.js";
+import { GetPlaysList } from "./lists/GetPlaysList.js";
 import { Message } from "discord.js";
 import { escapeColons } from "../utils/escapeColons.js";
 import { getNameById } from "../services/users.api.js";
 import { getWantList } from "../services/wantlist.api.js";
 import { parseCommand } from "../utils/parseCommand.js";
 
-export const ProcessList = async (message: Message, listType: 'want' | 'have' | 'tag') => {
+export const ProcessList = async (message: Message, listType: 'want' | 'have' | 'tag' | 'plays') => {
   let context = await parseCommand(message);
   if (!context) return;
   const { mentions, query } = context;
@@ -37,6 +38,9 @@ export const ProcessList = async (message: Message, listType: 'want' | 'have' | 
       case 'tag':
         const tagList = term.split(",")
         list = await getVinylsByTags(tagList);
+        break;
+      case 'plays':
+        list = await GetPlaysList(message)
         break;
       default:
         listName = "Want List"

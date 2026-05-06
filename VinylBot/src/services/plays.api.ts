@@ -1,6 +1,7 @@
 import { AlbumCount } from "../interfaces/AlbumCount.js";
 import { ArtistCount } from "../interfaces/ArtistCount.js";
 import { PlayLog } from "../interfaces/PlayLog.js";
+import { UUID } from "node:crypto";
 import supabase from "./supabase.js";
 
 const aggregateAlbumCounts = (playLogs: any[]): AlbumCount[] => {
@@ -42,11 +43,19 @@ export const getPlayLogs = async (): Promise<PlayLog[]> => {
   }));
 };
 
-const getPlaylogsByUserID = async (userID: string): Promise<PlayLog[]> => {
-  const { data, error } = await supabase
+export const getPlaylogsByUserIDs = async (userIDs: UUID[], limit: number = 0): Promise<PlayLog[]> => {
+  let query = supabase
     .from("playlogs")
     .select("*, vinyls(artist, album)")
-    .contains("listeners", [userID]);
+    .contains("listeners", userIDs)
+    .order("created_at", { ascending: false });
+
+    if (limit > 0)
+    {
+      query = query.limit(limit);
+    }
+
+  const {data, error} = await query;
 
   if (error) {
     console.error("Error fetching playlogs:", error);
@@ -106,7 +115,7 @@ export const getSortedPlaysByQuery = async (query: string): Promise<AlbumCount[]
 export const getTopArtistsByPlay = async (userID?: string): Promise<ArtistCount[]> => {
   let playlogs: PlayLog[] = [];
   if (userID) {
-    playlogs = await getPlaylogsByUserID(userID);
+    playlogs = await getPlaylogsByUserIDs([userID as UUID]);
   } else {
     playlogs = await getPlayLogs();
   }

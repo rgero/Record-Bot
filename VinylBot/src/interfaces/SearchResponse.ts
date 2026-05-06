@@ -6,4 +6,5 @@ export interface SearchResponse
   owners?: string[];
   searcher?: string[];
   length?: number;
+  date?: string;
 }
