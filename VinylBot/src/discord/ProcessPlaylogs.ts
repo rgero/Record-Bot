@@ -1,9 +1,8 @@
-import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse";
-import { GetPlaysList } from "../utils/GetPlaysList";
+import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse.js";
+import { GetPlaysList } from "../utils/GetPlaysList.js";
 import { Message } from "discord.js";
-import { ProcessList } from "./ProcessList";
-import { escapeColons } from "../utils/escapeColons";
-import { parseCommand } from "../utils/parseCommand";
+import { escapeColons } from "../utils/escapeColons.js";
+import { parseCommand } from "../utils/parseCommand.js";
 
 export const ProcessPlaylogs = async (message: Message) => {
     let context = await parseCommand(message);
