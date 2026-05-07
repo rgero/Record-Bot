@@ -35,6 +35,7 @@ export const GetPlaysList = async (message: Message): Promise<SearchResponse[]> 
     }) : targetList;  
 
     return filterList.map((play) => ({
+      id: Number(play.id) ?? -1,
       artist: play.artist ?? "Unknown Artist",
       album: play.album ?? "Unknown Album",
     }));

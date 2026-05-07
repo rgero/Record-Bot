@@ -8,10 +8,9 @@ import { ProcessHelp } from "./discord/ProcessHelp.js";
 import { ProcessInfo } from "./discord/ProcessInfo.js";
 import { ProcessList } from "./discord/ProcessList.js";
 import { ProcessPlay } from "./discord/ProcessPlay.js";
+import { ProcessPlaylog } from "./discord/ProcessPlayLog.js";
 import { ProcessPlaylogs } from "./discord/ProcessPlaylogs.js";
-import { ProcessRandomAlbum } from "./discord/random/ProcessRandomAlbum.js";
 import { ProcessRandomCommand } from "./discord/random/ProcessRandomCommand.js";
-import { ProcessRandomStore } from "./discord/random/ProcessRandomStore.js";
 import { ProcessTopCommand } from "./discord/stats/ProcessTopCommand.js";
 import { ProcessUnplayed } from "./discord/ProcessUnplayed.js";
 import { ProcessWant } from "./discord/ProcessWant.js";
@@ -53,6 +52,9 @@ client.on("messageCreate", async (message: Message) => {
 
     case "play":
       return await ProcessPlay(message);
+
+    case "playlog":
+      return await ProcessPlaylog(message);
 
     case "playlogs":
       return await ProcessPlaylogs(message);

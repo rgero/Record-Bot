@@ -5,4 +5,5 @@ export interface PlayLog {
   date: Date | null;
   album?: string;
   artist?: string;
+  imageUrl?: string;
 }

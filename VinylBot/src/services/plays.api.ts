@@ -43,12 +43,29 @@ export const getPlayLogs = async (): Promise<PlayLog[]> => {
   }));
 };
 
+export const getPlayLogByID = async (id: number): Promise<PlayLog|null> => {
+  const { data, error } = await supabase.from("playlogs").select("*, vinyls(artist, album, imageUrl)").eq("id", id).single();
+
+  if (error) {
+    console.error("Error fetching playlogs:", error);
+    return null;
+  }
+
+  const playlog = data;
+  return {
+    ...playlog,
+    artist: playlog.vinyls?.artist,
+    album: playlog.vinyls?.album,
+    imageUrl: playlog.vinyls?.imageUrl
+  }
+}
+
 export const getPlaylogsByUserIDs = async (userIDs: UUID[], limit: number = 0): Promise<PlayLog[]> => {
   let query = supabase
     .from("playlogs")
     .select("*, vinyls(artist, album)")
     .contains("listeners", userIDs)
-    .order("created_at", { ascending: false });
+    .order("date", { ascending: false });
 
     if (limit > 0)
     {
@@ -61,6 +78,8 @@ export const getPlaylogsByUserIDs = async (userIDs: UUID[], limit: number = 0): 
     console.error("Error fetching playlogs:", error);
     return [];
   }
+
+  console.log(data[0].id)
 
   return (data ?? []).map((p) => ({
     ...p,

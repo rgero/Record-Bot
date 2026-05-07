@@ -18,12 +18,11 @@ export const ProcessPlaylogs = async (message: Message) => {
     }
 
     const title = "Your Playlog";
-
     return await EmbeddedResponse({
       message,
       title,
       list,
-      formatItem: (item, idx) => `${idx + 1}. **${escapeColons(item.artist)}** - ${escapeColons(item.album)}`,
+      formatItem: (item, idx) => `${idx + 1}. **${escapeColons(item.artist)}** - ${escapeColons(item.album)} (${item.id})`,
       color: 0x1db954,
     });
 }
