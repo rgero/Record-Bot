@@ -94,11 +94,12 @@ export const searchVinyls = async (term: string): Promise<SearchResponse[]> => {
 };
 
 export const getVinylsByTags = async (tags: string[]): Promise<SearchResponse[]> => {
-  tags = tags.map(item => item.trim());
-  const {data, error} = await supabase
+  const normalizedTags = tags.map(item => item.trim().toLowerCase());
+
+  const { data, error } = await supabase
     .from('vinyls')
     .select('id, artist, album')
-    .contains("tags", tags);
+    .contains("tags", normalizedTags);
 
   if (error) throw error;
   return data ?? [];
