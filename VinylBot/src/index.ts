@@ -8,7 +8,7 @@ import { ProcessHelp } from "./discord/ProcessHelp.js";
 import { ProcessInfo } from "./discord/ProcessInfo.js";
 import { ProcessList } from "./discord/ProcessList.js";
 import { ProcessPlay } from "./discord/ProcessPlay.js";
-import { ProcessPlaylog } from "./discord/ProcessPlayLog.js";
+import { ProcessPlaylog } from "./discord/ProcessPlaylog.js";
 import { ProcessPlaylogs } from "./discord/ProcessPlaylogs.js";
 import { ProcessRandomCommand } from "./discord/random/ProcessRandomCommand.js";
 import { ProcessTopCommand } from "./discord/stats/ProcessTopCommand.js";
