@@ -29,6 +29,8 @@ export const ProcessHelp = async (message: Message) => {
         { 
           name: "Discovery & Stats", 
           value: 
+            "`!playlogs`: Gives you the list of playlogs.\n" +
+            "`!playlog {id}`: Gives you the details of that playlog entry.\n" +
             "`!random`: Chooses a random vinyl.\n" +
             "`!random {person}`: Chooses a random vinyl liked by that person.\n" +
             "`!random {term}`: Chooses a random vinyl based on that term.\n" +
