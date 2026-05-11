@@ -4,6 +4,7 @@ import { PlayLog } from "../interfaces/PlayLog.js";
 import { UUID } from "node:crypto";
 import supabase from "./supabase.js";
 
+/// Utility Functions
 const aggregateAlbumCounts = (playLogs: any[]): AlbumCount[] => {
   const albumCountMap: Record<number, AlbumCount> = {};
 
@@ -25,7 +26,6 @@ const aggregateAlbumCounts = (playLogs: any[]): AlbumCount[] => {
   return Object.values(albumCountMap).sort((a, b) => b.count - a.count);
 };
 
-
 export const getPlayLogs = async (): Promise<PlayLog[]> => {
   const { data, error } = await supabase
     .from("playlogs")
@@ -42,6 +42,8 @@ export const getPlayLogs = async (): Promise<PlayLog[]> => {
     album: p.vinyls?.album,
   }));
 };
+
+/// End of Utility Functions
 
 export const getPlayLogByID = async (id: number): Promise<PlayLog|null> => {
   const { data, error } = await supabase.from("playlogs").select("*, vinyls(artist, album, imageUrl)").eq("id", id).single();
