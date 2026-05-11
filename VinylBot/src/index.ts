@@ -4,6 +4,7 @@ import { Client, GatewayIntentBits, Message } from "discord.js";
 
 import { ProcessAdd } from "./discord/ProcessAdd.js";
 import { ProcessCheckExists } from "./discord/ProcessCheckExists.js";
+import { ProcessHave } from "./discord/ProcessHave.js";
 import { ProcessHelp } from "./discord/ProcessHelp.js";
 import { ProcessInfo } from "./discord/ProcessInfo.js";
 import { ProcessList } from "./discord/ProcessList.js";
@@ -43,6 +44,9 @@ client.on("messageCreate", async (message: Message) => {
   
     case "have":
       return await ProcessList(message, "have");
+
+    case "own":
+      return await ProcessHave(message);
 
     case "help":
       return await ProcessHelp(message);

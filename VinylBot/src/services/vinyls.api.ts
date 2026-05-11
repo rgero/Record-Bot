@@ -3,6 +3,7 @@ import { SearchResponse } from "../interfaces/SearchResponse.js";
 import { UUID } from "node:crypto";
 import { UnplayedRecord } from "../interfaces/UnplayedRecord.js";
 import { Vinyl } from "../interfaces/Vinyl.js";
+import { VinylSearchQuery } from "../interfaces/VinylSearchQuery.js";
 import supabase from "./supabase.js";
 
 /**
@@ -43,7 +44,7 @@ export const getVinylsByQuery = async (query: { type: string; term: string }): P
 };
 
 export const getFullVinylsByQuery = async (term: string): Promise<Vinyl[]> => {
-  const { data, error } = await supabase.from('vinyls').select(`*, purchaseLocation:locations (name)`).or(`artist.ilike.%${term}%,album.ilike.%${term}%`);;
+  const { data, error } = await supabase.from('vinyls').select(`*, purchaseLocation:locations (name)`).or(`artist.ilike.%${term}%,album.ilike.%${term}%`);
   if (error) throw error;
   return data ?? [];
 }
@@ -242,3 +243,24 @@ export const getUnplayedVinylCounts = async (targetIDs: UUID[]): Promise<Unplaye
 
   return data ?? [];
 }
+
+export const getVinylsBySearchQuery = async (searchQuery: VinylSearchQuery): Promise<Vinyl[]> => {
+  let dbQuery = supabase.from('vinyls').select(`*, purchaseLocation:locations (name)`);
+
+  if (searchQuery.owners && searchQuery.owners.length > 0) {
+    dbQuery = dbQuery.contains('owners', searchQuery.owners);
+  }
+
+  if (searchQuery.search) {
+    dbQuery = dbQuery.or(`artist.ilike.%${searchQuery.search}%,album.ilike.%${searchQuery.search}%`)
+  }
+
+  if (searchQuery.tags && searchQuery.tags.length > 0) {
+    dbQuery = dbQuery.contains('tags', searchQuery.tags);
+  }
+
+  const { data, error } = await dbQuery;
+
+  if (error) throw error;
+  return data ?? [];
+};
