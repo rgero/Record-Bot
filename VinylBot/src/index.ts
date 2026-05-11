@@ -72,7 +72,7 @@ client.on("messageCreate", async (message: Message) => {
     case "top":
       return await ProcessTopCommand(message);
 
-    case "u":
+    case "unplayed":
       return await ProcessUnplayed(message);
 
     case "want":
