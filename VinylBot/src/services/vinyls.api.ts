@@ -61,42 +61,8 @@ export const getVinylID = async (artist: string, album: string): Promise<number 
   return data ? data.id : null;
 };
 
-export const getVinylByID = async (id: number): Promise<Vinyl|null> => {
-  const { data, error } = await supabase
-    .from("vinyls")
-    .select("*")
-    .eq("id",id)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data ? data : null;
-}
-
-export const getVinylByDetails = async (artist: string, album: string): Promise<Vinyl | null> => {
-  const { data, error } = await supabase
-    .from("vinyls")
-    .select("*")
-    .ilike("artist", artist)
-    .ilike("album", album)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data ? data : null;
-};
-
-export const searchVinyls = async (term: string): Promise<SearchResponse[]> => {
-  const { data, error } = await supabase
-    .from('vinyls')
-    .select('id, artist, album, length')
-    .or(`artist.ilike.%${term}%,album.ilike.%${term}%`);
-
-  if (error) throw error;
-  return data ?? [];
-};
-
 export const getVinylsByTags = async (tags: string[]): Promise<SearchResponse[]> => {
   const normalizedTags = tags.map(item => item.trim().toLowerCase());
-
   const { data, error } = await supabase
     .from('vinyls')
     .select('id, artist, album')
@@ -108,7 +74,7 @@ export const getVinylsByTags = async (tags: string[]): Promise<SearchResponse[]>
 
 /**
  * MUTATIONS
- */
+*/
 export type AddStatus = "ADDED" | "DUPLICATE" | "ERROR";
 export const addVinyl = async (newVinyl: Omit<Vinyl, 'id'>): Promise<AddStatus> => {
   const { data, error } = await supabase.from("vinyls").insert({ ...newVinyl, playCount: 0 }).select('*').single();
@@ -122,37 +88,6 @@ export const addVinyl = async (newVinyl: Omit<Vinyl, 'id'>): Promise<AddStatus> 
   }
   
   return "ADDED";
-};
-
-export const addVinyls = async (newVinyls: Omit<Vinyl, 'id'>[]): Promise<Vinyl[]> => {
-  const { data, error } = await supabase
-    .from('vinyls')
-    .insert(newVinyls)
-    .select();
-
-  if (error) throw error;
-  return data ?? [];
-};
-
-export const deleteVinyl = async (vinylId: string | number): Promise<void> => {
-  const { error } = await supabase
-    .from('vinyls')
-    .delete()
-    .eq('id', vinylId);
-
-  if (error) throw error;
-};
-
-export const updateVinyl = async (vinylId: number, updatedVinyl: Partial<Vinyl>): Promise<Vinyl> => {
-  const { data, error } = await supabase
-    .from('vinyls')
-    .update(updatedVinyl)
-    .eq('id', vinylId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
 };
 
 export const getArtistVinylCounts = async (): Promise<AlbumCount[]> => {
