@@ -4,7 +4,52 @@ import { UUID } from "node:crypto";
 import { UnplayedRecord } from "../interfaces/UnplayedRecord.js";
 import { Vinyl } from "../interfaces/Vinyl.js";
 import { VinylSearchQuery } from "../interfaces/VinylSearchQuery.js";
+import { normalizeString } from "../utils/normalizeString.js";
 import supabase from "./supabase.js";
+
+/**
+ * Helpers 
+*/
+export const sortVinyls = (vinyls: Vinyl[], sortBy: string): Vinyl[] => {
+  const sortedData = [...vinyls];
+  const direction = sortBy.endsWith('-') ? '-' : '+';
+  const field = sortBy.slice(0, -1); // Removes the last character (+ or -)
+
+  sortedData.sort((a: Vinyl, b: Vinyl) => {
+    let compareA: any = '';
+    let compareB: any = '';
+
+    switch (field) {
+      case 'artist':
+        compareA = normalizeString(a.artist);
+        compareB = normalizeString(b.artist);
+        break;
+      case 'album':
+        compareA = normalizeString(a.album);
+        compareB = normalizeString(b.album);
+        break;
+      case 'length':
+        compareA = a.length ?? 0;
+        compareB = b.length ?? 0;
+        break;
+      case 'plays':
+        compareA = a.playCount ?? 0;
+        compareB = b.playCount ?? 0;
+        break;
+      default:
+        return 0;
+    }
+
+    // Handle descending order logic
+    const result = typeof compareA === 'string' 
+      ? compareA.localeCompare(compareB) 
+      : compareA - compareB;
+
+    return direction === '-' ? result * -1 : result;
+  });
+
+  return sortedData;
+}
 
 /**
  * FETCHERS
@@ -134,7 +179,7 @@ export const haveVinyl = async (query: {artist: string, album: string}): Promise
   return !!data;
 }
 
-export const getUnplayedVinyls = async (userID: string, mention?: string, query?: string): Promise<Vinyl[]> => {
+export const getUnplayedVinyls = async (userID: string, mention?: string, query?: string, sort?: string): Promise<Vinyl[]> => {
   const { data, error } = await supabase.rpc('get_unplayed_vinyls', { target_user_id: userID });
 
   if (error) {
@@ -147,9 +192,7 @@ export const getUnplayedVinyls = async (userID: string, mention?: string, query?
   // Filter by mention (owner)
   if (mention) {
     filteredData = filteredData.filter((item: Vinyl) => 
-      {
-        return Array.isArray(item.owners) && item.owners.includes(mention);
-      }
+      Array.isArray(item.owners) && item.owners.includes(mention)
     );
   }
 
@@ -163,6 +206,11 @@ export const getUnplayedVinyls = async (userID: string, mention?: string, query?
         item.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
       );
     });
+  }
+
+  // Sort the data
+  if (sort) {
+    filteredData = sortVinyls(filteredData, sort);
   }
 
   return filteredData;

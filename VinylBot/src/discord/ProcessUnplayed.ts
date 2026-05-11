@@ -48,21 +48,25 @@ export const ProcessUnplayed = async (message: Message) => {
       return message.reply("❌ Please mention only one user to see a detailed list.");
     }
 
+    let sort = "artist+";
+    if (flags.sort && typeof flags.sort === 'string') {
+      const validSorts = ["artist+", "artist-", "album+", "album-", "length+", "length-", "plays+", "plays-"];
+      if (validSorts.includes(flags.sort)) {
+        sort = flags.sort;
+      }
+    }
+
     const userID = targetIDs[0];
-    const data = await getUnplayedVinyls(userID, mentions[0], query);
+    const data = await getUnplayedVinyls(userID, mentions[0], query, sort);
 
     if (!data || data.length === 0) {
       return message.reply("🎉 No unplayed records found!");
     }
 
-    const sortedVinyls = data.sort((a, b) => 
-      a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album)
-    );
-
     return await EmbeddedResponse({
       message,
-      title: `Unplayed Vinyls (${sortedVinyls.length} total)`,
-      list: sortedVinyls,
+      title: `Unplayed Vinyls (${data.length} total)`,
+      list: data,
       formatItem: (item, idx) => `${idx + 1}. **${escapeColons(item.artist)}** - ${escapeColons(item.album)}`,
       color: 0x3498db,
     });
