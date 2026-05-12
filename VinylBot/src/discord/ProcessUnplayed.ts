@@ -8,6 +8,7 @@ import { escapeColons } from "../utils/escapeColons.js";
 import { getDropdownValue } from "../utils/discordToDropdown.js";
 import { getNameById } from "../services/users.api.js";
 import { resolveUserMap } from "../utils/resolveUserMap.js";
+import { validSorts } from "../utils/sortVinyls.js";
 
 export const ProcessUnplayed = async (message: Message) => {
   const context: CommandContext|undefined = await parseCommand(message);
@@ -50,7 +51,6 @@ export const ProcessUnplayed = async (message: Message) => {
 
     let sort = "artist+";
     if (flags.sort && typeof flags.sort === 'string') {
-      const validSorts = ["artist+", "artist-", "album+", "album-", "length+", "length-", "plays+", "plays-"];
       if (validSorts.includes(flags.sort)) {
         sort = flags.sort;
       }

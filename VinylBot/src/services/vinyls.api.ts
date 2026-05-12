@@ -4,52 +4,8 @@ import { UUID } from "node:crypto";
 import { UnplayedRecord } from "../interfaces/UnplayedRecord.js";
 import { Vinyl } from "../interfaces/Vinyl.js";
 import { VinylSearchQuery } from "../interfaces/VinylSearchQuery.js";
-import { normalizeString } from "../utils/normalizeString.js";
+import { sortVinyls } from "../utils/sortVinyls.js";
 import supabase from "./supabase.js";
-
-/**
- * Helpers 
-*/
-export const sortVinyls = (vinyls: Vinyl[], sortBy: string): Vinyl[] => {
-  const sortedData = [...vinyls];
-  const direction = sortBy.endsWith('-') ? '-' : '+';
-  const field = sortBy.slice(0, -1); // Removes the last character (+ or -)
-
-  sortedData.sort((a: Vinyl, b: Vinyl) => {
-    let compareA: any = '';
-    let compareB: any = '';
-
-    switch (field) {
-      case 'artist':
-        compareA = normalizeString(a.artist);
-        compareB = normalizeString(b.artist);
-        break;
-      case 'album':
-        compareA = normalizeString(a.album);
-        compareB = normalizeString(b.album);
-        break;
-      case 'length':
-        compareA = a.length ?? 0;
-        compareB = b.length ?? 0;
-        break;
-      case 'plays':
-        compareA = a.playCount ?? 0;
-        compareB = b.playCount ?? 0;
-        break;
-      default:
-        return 0;
-    }
-
-    // Handle descending order logic
-    const result = typeof compareA === 'string' 
-      ? compareA.localeCompare(compareB) 
-      : compareA - compareB;
-
-    return direction === '-' ? result * -1 : result;
-  });
-
-  return sortedData;
-}
 
 /**
  * FETCHERS
@@ -64,6 +20,29 @@ export const getVinyls = async (): Promise<Vinyl[]> => {
   return data ?? [];
 };
 
+
+export const getVinylsBySearchQuery = async (searchQuery: VinylSearchQuery): Promise<Vinyl[]> => {
+  let dbQuery = supabase.from('vinyls').select(`*, purchaseLocation:locations (name)`);
+
+  if (searchQuery.owners && searchQuery.owners.length > 0) {
+    dbQuery = dbQuery.contains('owners', searchQuery.owners);
+  }
+
+  if (searchQuery.search) {
+    dbQuery = dbQuery.or(`artist.ilike.%${searchQuery.search}%,album.ilike.%${searchQuery.search}%`)
+  }
+
+  if (searchQuery.tags && searchQuery.tags.length > 0) {
+    dbQuery = dbQuery.contains('tags', searchQuery.tags);
+  }
+
+  const { data, error } = await dbQuery;
+
+  if (error) throw error;
+  return data ?? [];
+};
+
+
 export const getVinylsLikedByUserID = async (userID: string): Promise<Vinyl[]> => {
   const { data, error } = await supabase
     .from('vinyls')
@@ -74,8 +53,8 @@ export const getVinylsLikedByUserID = async (userID: string): Promise<Vinyl[]> =
   return data ?? [];
 };
 
-export const getVinylsByQuery = async (query: { type: string; term: string }): Promise<SearchResponse[]> => {
-  let dbQuery = supabase.from('vinyls').select('id, artist, album');
+export const getVinylsByQuery = async (query: { type: string; term: string }): Promise<Vinyl[]> => {
+  let dbQuery = supabase.from('vinyls').select('*');
 
   if (query.type === 'user') {
     dbQuery = dbQuery.contains('owners', [query.term]);
@@ -106,11 +85,11 @@ export const getVinylID = async (artist: string, album: string): Promise<number 
   return data ? data.id : null;
 };
 
-export const getVinylsByTags = async (tags: string[]): Promise<SearchResponse[]> => {
+export const getVinylsByTags = async (tags: string[]): Promise<Vinyl[]> => {
   const normalizedTags = tags.map(item => item.trim().toLowerCase());
   const { data, error } = await supabase
     .from('vinyls')
-    .select('id, artist, album')
+    .select('*')
     .contains("tags", normalizedTags);
 
   if (error) throw error;
@@ -226,24 +205,3 @@ export const getUnplayedVinylCounts = async (targetIDs: UUID[]): Promise<Unplaye
 
   return data ?? [];
 }
-
-export const getVinylsBySearchQuery = async (searchQuery: VinylSearchQuery): Promise<Vinyl[]> => {
-  let dbQuery = supabase.from('vinyls').select(`*, purchaseLocation:locations (name)`);
-
-  if (searchQuery.owners && searchQuery.owners.length > 0) {
-    dbQuery = dbQuery.contains('owners', searchQuery.owners);
-  }
-
-  if (searchQuery.search) {
-    dbQuery = dbQuery.or(`artist.ilike.%${searchQuery.search}%,album.ilike.%${searchQuery.search}%`)
-  }
-
-  if (searchQuery.tags && searchQuery.tags.length > 0) {
-    dbQuery = dbQuery.contains('tags', searchQuery.tags);
-  }
-
-  const { data, error } = await dbQuery;
-
-  if (error) throw error;
-  return data ?? [];
-};

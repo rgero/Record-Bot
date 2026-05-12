@@ -26,7 +26,7 @@ export const ProcessRandomCommand = async (message: Message) => {
       case "unplayed":
         return await ProcessRandomAlbum(message, context);
       default:
-        await message.reply(`⚠️ Unknown flag: --${flag}. Valid flags are --store or --unplayed.`);
+        await message.reply(`⚠️ Unknown flag: --${flag}. Valid flags are --store, --tags, --unplayed.`);
         return;
     }
   }

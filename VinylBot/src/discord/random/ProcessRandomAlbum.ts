@@ -4,13 +4,13 @@ import { getUserById, getUserByName } from "../../services/users.api.js";
 
 import { CommandContext } from "../../utils/parseCommand.js";
 import { PlayLog } from "../../interfaces/PlayLog.js";
-import { SearchResponse } from "../../interfaces/SearchResponse.js";
 import { User } from "../../interfaces/User.js";
+import { SearchResponse as Vinyl } from "../../interfaces/SearchResponse.js";
 import { addPlayLog } from "../../services/plays.api.js";
 import { escapeColons } from "../../utils/escapeColons.js";
 import { getDropdownValue } from "../../utils/discordToDropdown.js";
 
-const buildEmbed = (currentVinyl: SearchResponse, title?: string) => {
+const buildEmbed = (currentVinyl: Vinyl, title?: string) => {
   return {
     title: `🎲 Random Pick${title ? ` ${title}` : ""}`,
     color: 0x5865f2,
@@ -59,7 +59,7 @@ const buildRow = ({ showPlay, disabled = false }: { showPlay: boolean; disabled?
   return new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(buttons);
 };
 
-const getRandomVinyl = (list: SearchResponse[]): SearchResponse => {
+const getRandomVinyl = (list: Vinyl[]): Vinyl => {
   return list[Math.floor(Math.random() * list.length)];
 };
 
@@ -68,7 +68,7 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
     const { mentions, flags, query } = context;
 
     let targetUser: User | null = null;
-    let vinyls: SearchResponse[] = [];
+    let vinyls: Vinyl[] = [];
 
     let titleSuffix = "";
 
@@ -79,7 +79,7 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
 
     targetUser = await getUserByName(getDropdownValue(message.author.username));
     if (flags.unplayed) {
-      vinyls = (await getUnplayedVinyls(targetUser!.id, mentions[0], query)) as SearchResponse[];
+      vinyls = await getUnplayedVinyls(targetUser!.id, mentions[0], query);
       titleSuffix = "from Your Unplayed";
     } else if (flags.tags) {
       vinyls = await getVinylsByTags(flags.tags.toString().split(','))
@@ -88,13 +88,13 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
       targetUser = await getUserById(mentions[0]); 
       titleSuffix = `liked by ${targetUser ? targetUser.name : "Unknown User"}`;
       if (targetUser) {
-        vinyls = (await getVinylsLikedByUserID(mentions[0])) as SearchResponse[];
+        vinyls = await getVinylsLikedByUserID(mentions[0]);
       }
     } else if (query) {
       vinyls = await getVinylsByQuery({ type: "search", term: query });
       targetUser = await getUserByName(getDropdownValue(message.author.username));
     } else {
-      vinyls = (await getVinyls()) as SearchResponse[];
+      vinyls = await getVinyls();
       targetUser = await getUserByName(getDropdownValue(message.author.username));
     }
 
