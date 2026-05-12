@@ -29,7 +29,7 @@ describe('parseCommand', () => {
     
     expect(result).toEqual({ 
       mentions: [], 
-      flags: [], 
+      flags: {}, // Changed from [] to {}
       query: "" 
     });
   });
@@ -44,7 +44,6 @@ describe('parseCommand', () => {
     const mockMap = new Map().set('alice', [mockDbId]);
     vi.mocked(userMapService.resolveUserMap).mockResolvedValue(mockMap);
 
-    // Discord message content usually contains the raw mention string <@123>
     const message = createMockMessage("!have <@123> Pink Floyd", mentions);
     const result = await parseCommand(message);
 
@@ -54,11 +53,27 @@ describe('parseCommand', () => {
 
   it('should extract flags and scrub them from the query', async () => {
     vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map());
+    // Note: your code handles em-dash (—) by converting it to --
     const message = createMockMessage("!have Dark Side --vinyl —cd");
     const result = await parseCommand(message);
 
-    expect(result?.flags).toEqual(['vinyl', 'cd']);
+    // Flags should be an object with boolean values for simple flags
+    expect(result?.flags).toEqual({
+      vinyl: true,
+      cd: true
+    });
     expect(result?.query).toBe("Dark Side");
+  });
+
+  it('should handle value-based flags', async () => {
+    vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map());
+    const message = createMockMessage("!have --sort artist+ Rise Against");
+    const result = await parseCommand(message);
+
+    expect(result?.flags).toEqual({
+      sort: 'artist+'
+    });
+    expect(result?.query).toBe("Rise Against");
   });
 
   it('should handle complex mixed inputs', async () => {
@@ -73,8 +88,16 @@ describe('parseCommand', () => {
 
     expect(result).toEqual({
       mentions: ['uuid-123'],
-      flags: ['detailed'],
+      flags: { detailed: true }, // Changed from ['detailed']
       query: 'Radiohead'
     });
+  });
+
+  it('should throw error when a value-flag is missing its argument', async () => {
+    vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map());
+    const message = createMockMessage("!have --sort");
+    
+    // Test for the explicit error handling you added in the code
+    await expect(parseCommand(message)).rejects.toThrow('The flag `--sort` requires an argument');
   });
 });

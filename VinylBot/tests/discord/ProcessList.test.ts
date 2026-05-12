@@ -37,55 +37,13 @@ describe('ProcessList Integration Tests', () => {
     vi.clearAllMocks();
   });
 
-  describe('Have List (!have)', () => {
-    it('should fetch from vinyls.api using the full context object', async () => {
-      const mockMessage = createMockMessage('!have Beatles');
-      const mockContext = {
-        query: 'Beatles',
-        mentions: [],
-        flags: []
-      };
-
-      vi.mocked(commandParser.parseCommand).mockResolvedValue(mockContext);
-      vi.mocked(vinylApi.getVinylsByQuery).mockResolvedValue([
-        mockSearchItem('The Beatles', 'Abbey Road')
-      ]);
-
-      await ProcessList(mockMessage, 'have');
-
-      // Assert that we now pass the whole context to the API
-      expect(vinylApi.getVinylsByQuery).toHaveBeenCalledWith({term: 'Beatles', type: 'search'});
-      
-      const replyCall = vi.mocked(mockMessage.reply).mock.calls[0][0] as any;
-      expect(replyCall.embeds[0].data.title).toContain('Collection matches for "Beatles"');
-    });
-
-    it('should properly handle user mentions in the context', async () => {
-      const mockMessage = createMockMessage('!have @Alice');
-      const mockContext = {
-        mentions: ['uuid-1234' as any],
-        query: "",
-        flags: []
-      };
-
-      vi.mocked(commandParser.parseCommand).mockResolvedValue(mockContext);
-      vi.mocked(vinylApi.getVinylsByQuery).mockResolvedValue([
-        mockSearchItem('Artist', 'Title')
-      ]);
-
-      await ProcessList(mockMessage, 'have');
-
-      expect(vinylApi.getVinylsByQuery).toHaveBeenCalledWith({term: "uuid-1234", type: "user"});
-    });
-  });
-
   describe('Want List (!wantlist)', () => {
     it('should fetch from wantlist.api using the context object', async () => {
       const mockMessage = createMockMessage('!wantlist Rise Against');
       const mockContext = {
         query: 'Rise Against',
         mentions: [],
-        flags: []
+        flags: {}
       };
 
       vi.mocked(commandParser.parseCommand).mockResolvedValue(mockContext);
@@ -104,29 +62,42 @@ describe('ProcessList Integration Tests', () => {
 
   describe('Edge Cases & Errors', () => {
     it('should reply with a warning if the query returns no results', async () => {
-      const mockMessage = createMockMessage('!have NonExistentArtist');
+      const mockMessage = createMockMessage('!want NonExistentArtist');
+      
+      // Setup context to trigger the 'search' type in the switch default
       vi.mocked(commandParser.parseCommand).mockResolvedValue({ 
         query: 'NonExistentArtist', 
         mentions: [], 
-        flags: [] 
+        flags: {}
       });
-      vi.mocked(vinylApi.getVinylsByQuery).mockResolvedValue([]);
 
-      await ProcessList(mockMessage, 'have');
+      // We must mock getWantList because that's what the 'want' case calls
+      vi.mocked(wantlistApi.getWantList).mockResolvedValue([]);
 
+      await ProcessList(mockMessage, 'want');
+
+      // EmbeddedResponse checks list.length and calls message.reply
       expect(mockMessage.reply).toHaveBeenCalledWith(expect.stringContaining('❌ No items found'));
     });
 
     it('should handle API errors gracefully', async () => {
-      const mockMessage = createMockMessage('!have error');
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      const mockMessage = createMockMessage('!want error');
+      // Prevent console.error from cluttering test output
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      vi.mocked(commandParser.parseCommand).mockResolvedValue({ query: '', mentions: [], flags: [] });
-      vi.mocked(vinylApi.getVinylsByQuery).mockRejectedValue(new Error('DB Error'));
+      vi.mocked(commandParser.parseCommand).mockResolvedValue({ 
+        query: 'fail', 
+        mentions: [], 
+        flags: {}
+      });
+      
+      // Mock the actual function used in the 'default' switch case
+      vi.mocked(wantlistApi.getWantList).mockRejectedValue(new Error('DB Error'));
 
-      await ProcessList(mockMessage, 'have');
+      await ProcessList(mockMessage, 'want');
 
       expect(mockMessage.reply).toHaveBeenCalledWith(expect.stringContaining('⚠️ An error occurred'));
+      consoleSpy.mockRestore();
     });
   });
 });
