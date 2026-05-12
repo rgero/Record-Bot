@@ -43,9 +43,6 @@ client.on("messageCreate", async (message: Message) => {
       return await ProcessCheckExists(message);
   
     case "have":
-      return await ProcessList(message, "have");
-
-    case "own":
       return await ProcessHave(message);
 
     case "help":
