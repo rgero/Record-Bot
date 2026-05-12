@@ -26,11 +26,18 @@ const aggregateAlbumCounts = (playLogs: any[]): AlbumCount[] => {
   return Object.values(albumCountMap).sort((a, b) => b.count - a.count);
 };
 
-export const getPlayLogs = async (): Promise<PlayLog[]> => {
-  const { data, error } = await supabase
+export const getPlayLogs = async (limit: number = 0): Promise<PlayLog[]> => {
+  let query = supabase
     .from("playlogs")
-    .select("*, vinyls(artist, album)");
+    .select("*, vinyls(artist, album)")
+    .order("date", { ascending: false });
 
+  if (limit > 0)
+  {
+    query = query.limit(limit);
+  }
+
+  const { data, error } = await query;
   if (error) {
     console.error("Error fetching playlogs:", error);
     return [];
@@ -80,9 +87,7 @@ export const getPlaylogsByUserIDs = async (userIDs: UUID[], limit: number = 0): 
     console.error("Error fetching playlogs:", error);
     return [];
   }
-
-  console.log(data[0].id)
-
+  
   return (data ?? []).map((p) => ({
     ...p,
     artist: p.vinyls?.artist,

@@ -8,7 +8,7 @@ export const ProcessPlaylogs = async (message: Message) => {
     let context = await parseCommand(message);
     if (!context) return;
 
-    let { flags } = context;
+    let { mentions, flags } = context;
 
     let list = await GetPlaysList(message);
     if (flags.count)
@@ -17,7 +17,15 @@ export const ProcessPlaylogs = async (message: Message) => {
       return await message.reply(`🎶 You have ${count} total plays in your playlog!`);      
     }
 
-    const title = "Your Playlog";
+    let title = "Your Playlog";
+    if (flags.all)
+    {
+      title = "All Playlogs";
+    } else if (mentions && mentions.length > 0)
+    {
+      title = "Mentioned User's Playlogs";
+    }
+
     return await EmbeddedResponse({
       message,
       title,

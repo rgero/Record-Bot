@@ -1,8 +1,9 @@
+import { getPlayLogs, getPlaylogsByUserIDs } from "../services/plays.api.js";
+
 import { Message } from "discord.js";
 import { PlayLog } from "../interfaces/PlayLog.js";
 import { UUID } from "node:crypto";
 import { getDropdownValue } from "./discordToDropdown.js";
-import { getPlaylogsByUserIDs } from "../services/plays.api.js";
 import { parseCommand } from "./parseCommand.js";
 import { resolveUserMap } from "./resolveUserMap.js";
 
@@ -25,7 +26,13 @@ export const GetPlaysList = async (message: Message): Promise<Partial<PlayLog>[]
       limit = Number(flags.limit);
     }
 
-    const targetList = await getPlaylogsByUserIDs(targetIDs, limit);
+    let targetList: PlayLog[] = [];
+    if (flags.all)
+    {
+      targetList = await getPlayLogs(limit);
+    } else {
+      targetList = await getPlaylogsByUserIDs(targetIDs, limit);
+    }
 
     const filterList = query ? targetList.filter(play => {
       const searchTerm = query.toLowerCase();
