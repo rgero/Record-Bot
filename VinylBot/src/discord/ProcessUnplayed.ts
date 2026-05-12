@@ -31,10 +31,12 @@ export const ProcessUnplayed = async (message: Message) => {
       const rawData = await getUnplayedVinylCounts(targetIDs);
       const namedData = await Promise.all(
         rawData.map(async (item) => ({
-          userName: await getNameById(item.user_id), 
-          count: item.unplayed_count
+          userName: await getNameById(item.title), 
+          count: item.count
         }))
       );
+
+      console.log(namedData);
 
       return await EmbeddedResponse({
         message,

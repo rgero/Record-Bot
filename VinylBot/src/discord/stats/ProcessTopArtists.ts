@@ -1,5 +1,5 @@
-import { ArtistCount } from "../../interfaces/ArtistCount.js";
 import { EmbeddedResponse } from "../../utils/discord/EmbeddedResponse.js";
+import { ItemCount } from "../../interfaces/ItemCount.js";
 import { Message } from "discord.js";
 import { escapeColons } from "../../utils/escapeColons.js";
 import { getTopArtistsByPlay } from "../../services/plays.api.js";
@@ -11,7 +11,7 @@ export const ProcessTopArtists = async (message: Message) => {
     if (!context) return;
     let { mentions } = context;
 
-    let list: ArtistCount[] = [];
+    let list: ItemCount[] = [];
     if (mentions.length === 1) {
       list = await getTopArtistsByPlay(mentions[0]);
     } else {
@@ -23,7 +23,7 @@ export const ProcessTopArtists = async (message: Message) => {
       title: `Top Artists by Play Count`.trim(),
       list,
       formatItem: (item, idx) =>
-        `${idx + 1}. **${escapeColons(item.name)}** - ${item.count}`,
+        `${idx + 1}. **${escapeColons(item.title)}** - ${item.count}`,
     });
   } catch (error) {
     console.error("Error in ProcessTop:", error);

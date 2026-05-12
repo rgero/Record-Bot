@@ -1,6 +1,5 @@
-import { AlbumCount } from "../interfaces/AlbumCount.js";
+import { ItemCount } from "../interfaces/ItemCount.js";
 import { UUID } from "node:crypto";
-import { UnplayedRecord } from "../interfaces/UnplayedRecord.js";
 import { Vinyl } from "../interfaces/Vinyl.js";
 import { VinylSearchQuery } from "../interfaces/VinylSearchQuery.js";
 import { sortVinyls } from "../utils/sortVinyls.js";
@@ -113,7 +112,7 @@ export const addVinyl = async (newVinyl: Omit<Vinyl, 'id'>): Promise<AddStatus> 
   return "ADDED";
 };
 
-export const getArtistVinylCounts = async (): Promise<AlbumCount[]> => {
+export const getArtistVinylCounts = async (): Promise<ItemCount[]> => {
   const { data, error } = await supabase.from('vinyls').select('artist')
   
   if (error) throw error;
@@ -126,14 +125,14 @@ export const getArtistVinylCounts = async (): Promise<AlbumCount[]> => {
   return Object.entries(counts).map(([title, count]) => ({ title, count })).sort((a, b) => b.count - a.count);
 };
 
-export const getVinylsByPlayCount = async (): Promise<AlbumCount[]> => {
+export const getVinylsByPlayCount = async (): Promise<ItemCount[]> => {
   const { data, error } = await supabase.from('vinyls').select('*').order('playCount', { ascending: false })
   if (error) throw error;
   
   return data.map(vinyl => ({ title: `${vinyl.artist} - ${vinyl.album}`, count: vinyl.playCount || 0 }));
 };
 
-export const getArtistVinylCountByUserId = async (userID: string): Promise<AlbumCount[]> => {
+export const getArtistVinylCountByUserId = async (userID: string): Promise<ItemCount[]> => {
   const { data, error } = await supabase.from('vinyls').select('artist').contains('owners', [userID]);
   if (error) throw error;
   
@@ -194,7 +193,7 @@ export const getUnplayedVinyls = async (userID: string, mention?: string, query?
   return filteredData;
 };
 
-export const getUnplayedVinylCounts = async (targetIDs: UUID[]): Promise<UnplayedRecord[]> => {
+export const getUnplayedVinylCounts = async (targetIDs: UUID[]): Promise<ItemCount[]> => {
   const { data, error } = await supabase.rpc('get_unplayed_counts', { target_user_ids: targetIDs });
 
   if (error) {

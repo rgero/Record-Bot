@@ -1,7 +1,7 @@
 import { getArtistVinylCountByUserId, getArtistVinylCounts } from "../../services/vinyls.api.js";
 
-import { AlbumCount } from "../../interfaces/AlbumCount.js";
 import { EmbeddedResponse } from "../../utils/discord/EmbeddedResponse.js";
+import { ItemCount } from "../../interfaces/ItemCount.js";
 import { Message } from "discord.js";
 import { escapeColons } from "../../utils/escapeColons.js";
 import { getNameById } from "../../services/users.api.js";
@@ -21,7 +21,7 @@ export const ProcessTop = async (message: Message) => {
       return;
     }
 
-    let list: AlbumCount[] = [];
+    let list: ItemCount[] = [];
     let titleSuffix = "";
 
     if (mentions.length === 1) {

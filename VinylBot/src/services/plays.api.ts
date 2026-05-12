@@ -1,12 +1,11 @@
-import { AlbumCount } from "../interfaces/AlbumCount.js";
-import { ArtistCount } from "../interfaces/ArtistCount.js";
+import { ItemCount } from "../interfaces/ItemCount.js";
 import { PlayLog } from "../interfaces/PlayLog.js";
 import { UUID } from "node:crypto";
 import supabase from "./supabase.js";
 
 /// Utility Functions
-const aggregateAlbumCounts = (playLogs: any[]): AlbumCount[] => {
-  const albumCountMap: Record<number, AlbumCount> = {};
+const aggregateAlbumCounts = (playLogs: any[]): ItemCount[] => {
+  const albumCountMap: Record<number, ItemCount> = {};
 
   playLogs.forEach((p) => {
     const albumId = p.album_id;
@@ -110,7 +109,7 @@ export const addPlayLog = async (newPlayLog: PlayLog) => {
   }
 };
 
-export const getTopPlayedAlbumsByUserID = async (userID: string): Promise<AlbumCount[]> => {
+export const getTopPlayedAlbumsByUserID = async (userID: string): Promise<ItemCount[]> => {
   const { data, error } = await supabase
     .from("playlogs")
     .select("album_id, vinyls(artist, album)")
@@ -124,7 +123,7 @@ export const getTopPlayedAlbumsByUserID = async (userID: string): Promise<AlbumC
   return aggregateAlbumCounts(data || []);
 };
 
-export const getSortedPlaysByQuery = async (query: string): Promise<AlbumCount[]> => {
+export const getSortedPlaysByQuery = async (query: string): Promise<ItemCount[]> => {
   const { data, error } = await supabase
     .from("playlogs")
     .select("album_id, vinyls!inner(artist, album)")
@@ -138,7 +137,7 @@ export const getSortedPlaysByQuery = async (query: string): Promise<AlbumCount[]
   return aggregateAlbumCounts(data || []);
 };
 
-export const getTopArtistsByPlay = async (userID?: string): Promise<ArtistCount[]> => {
+export const getTopArtistsByPlay = async (userID?: string): Promise<ItemCount[]> => {
   let playlogs: PlayLog[] = [];
   if (userID) {
     playlogs = await getPlaylogsByUserIDs([userID as UUID]);
@@ -152,5 +151,10 @@ export const getTopArtistsByPlay = async (userID?: string): Promise<ArtistCount[
     return acc;
   }, {});
 
-  return Object.entries(counts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+  return Object.entries(counts)
+    .map(([artistName, count]): ItemCount => ({ 
+      title: artistName, 
+      count 
+    }))
+    .sort((a, b) => b.count - a.count);
 }

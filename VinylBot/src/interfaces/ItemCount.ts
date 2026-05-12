@@ -1,4 +1,4 @@
-export interface AlbumCount {
+export interface ItemCount {
   title: string,
   count: number
 }

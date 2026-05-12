@@ -1,4 +1,4 @@
-import { AlbumCount } from "../interfaces/AlbumCount.js";
+import { ItemCount } from "../interfaces/ItemCount.js";
 import { Location } from "../interfaces/Location.js";
 import { VinylWithLocation } from "../interfaces/Vinyl.js";
 import supabase from "./supabase.js";
@@ -24,7 +24,7 @@ export const getPhysicalLocations = async (): Promise<Location[]> => {
   return data ?? [];
 };
 
-const countVinylsByLocation = (vinyls: VinylWithLocation[]): AlbumCount[] => {
+const countVinylsByLocation = (vinyls: VinylWithLocation[]): ItemCount[] => {
   const counts: Record<string, number> = vinyls.reduce((acc, curr) => {
     const locName = curr.purchaseLocation.name;
     acc[locName] = (acc[locName] || 0) + 1;
@@ -36,7 +36,7 @@ const countVinylsByLocation = (vinyls: VinylWithLocation[]): AlbumCount[] => {
     .sort((a, b) => b.count - a.count);
 };
 
-export const getLocationsByPurchaseCountForID = async (userID: string): Promise<AlbumCount[]> => {
+export const getLocationsByPurchaseCountForID = async (userID: string): Promise<ItemCount[]> => {
   const { data, error } = await supabase
     .from('vinyls')
     .select('owners,purchaseLocation:locations(name)')
@@ -50,7 +50,7 @@ export const getLocationsByPurchaseCountForID = async (userID: string): Promise<
   return countVinylsByLocation(vinyls);
 };
 
-export const getLocationsByPurchaseCount = async (): Promise<AlbumCount[]> => {
+export const getLocationsByPurchaseCount = async (): Promise<ItemCount[]> => {
   const { data, error } = await supabase.from('locations').select('*').order('purchaseCount', { ascending: false });
   if (error) throw error;
 
