@@ -1,17 +1,19 @@
-import { getVinylsByQuery, getVinylsByTags } from "../services/vinyls.api.js";
+import { sortVinyls, validSorts } from "../utils/sortVinyls.js";
 
 import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse.js";
-import { GetPlaysList } from "../utils/GetPlaysList.js";
 import { Message } from "discord.js";
+import { SearchResponse } from "../interfaces/SearchResponse.js";
+import { Vinyl } from "../interfaces/Vinyl.js";
 import { escapeColons } from "../utils/escapeColons.js";
 import { getNameById } from "../services/users.api.js";
+import { getVinylsByTags } from "../services/vinyls.api.js";
 import { getWantList } from "../services/wantlist.api.js";
 import { parseCommand } from "../utils/parseCommand.js";
 
-export const ProcessList = async (message: Message, listType: 'want' | 'have' | 'tag') => {
+export const ProcessList = async (message: Message, listType: 'want' | 'tag') => {
   let context = await parseCommand(message);
   if (!context) return;
-  const { mentions, query } = context;
+  const { mentions, flags, query } = context;
 
   let type: "full" | "user" | "search" = "full";
   let term = "";
@@ -29,15 +31,20 @@ export const ProcessList = async (message: Message, listType: 'want' | 'have' | 
       term = query;
     }
 
-    let list;
+    let sort = "artist+";
+    if (flags.sort && typeof flags.sort === 'string') {
+      if (validSorts.includes(flags.sort)) {
+        sort = flags.sort;
+      }
+    }
+
+let list: (Vinyl | SearchResponse)[] = [];
     let listName = "Collection"
     switch(listType) {
-      case 'have':
-        list = await getVinylsByQuery({ type, term });
-        break;
       case 'tag':
         const tagList = term.split(",")
-        list = await getVinylsByTags(tagList);
+        list = sortVinyls(await getVinylsByTags(tagList), sort);
+
         break;
       default:
         listName = "Want List"

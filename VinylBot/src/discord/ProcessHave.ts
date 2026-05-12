@@ -1,3 +1,5 @@
+import { sortVinyls, validSorts } from "../utils/sortVinyls.js";
+
 import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse.js";
 import { Message } from "discord.js";
 import { VinylSearchQuery } from "../interfaces/VinylSearchQuery.js";
@@ -16,8 +18,15 @@ export const ProcessHave = async (message: Message) => {
       tags: flags["tags"] && typeof flags["tags"] === 'string' ? flags["tags"].split(",").map((t: string) => t.toLowerCase()) : undefined,
     }
 
+    let sort = "artist+";
+    if (flags.sort && typeof flags.sort === 'string') {
+      if (validSorts.includes(flags.sort)) {
+        sort = flags.sort;
+      }
+    }
+
     try {
-      const list = await getVinylsBySearchQuery(searchQuery);
+      const list = sortVinyls(await getVinylsBySearchQuery(searchQuery), sort);
       const title = `The Have List - ${list.length} vinyl(s) found`;
 
       return await EmbeddedResponse({
