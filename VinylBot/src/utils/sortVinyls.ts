@@ -1,5 +1,5 @@
-import { Vinyl } from "../interfaces/Vinyl";
-import { normalizeString } from "./normalizeString";
+import { Vinyl } from "../interfaces/Vinyl.js";
+import { normalizeString } from "./normalizeString.js";
 
 export const validSorts = ["artist+", "artist-", "album+", "album-", "length+", "length-", "plays+", "plays-"];
 
