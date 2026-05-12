@@ -46,7 +46,7 @@ describe('ProcessList Integration Tests', () => {
         flags: {}
       };
 
-      vi.mocked(commandParser.parseCommand).mockResolvedValue(mockContext);
+      vi.mocked(commandParser.parseCommand).mockResolvedValue({ ok: true, context: mockContext });
       vi.mocked(wantlistApi.getWantList).mockResolvedValue([
         mockVinylItem('Rise Against', 'The Unraveling') as WantedItem
       ]);
@@ -64,10 +64,13 @@ describe('ProcessList Integration Tests', () => {
     it('should reply with a warning if the query returns no results', async () => {
       const mockMessage = createMockMessage('!want NonExistentArtist');
       
-      vi.mocked(commandParser.parseCommand).mockResolvedValue({ 
-        query: 'NonExistentArtist', 
-        mentions: [], 
-        flags: {}
+      vi.mocked(commandParser.parseCommand).mockResolvedValue({
+        ok: true,
+        context: {
+          query: 'NonExistentArtist',
+          mentions: [],
+          flags: {}
+        }
       });
 
       vi.mocked(wantlistApi.getWantList).mockResolvedValue([]);
@@ -81,10 +84,13 @@ describe('ProcessList Integration Tests', () => {
       const mockMessage = createMockMessage('!want error');
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      vi.mocked(commandParser.parseCommand).mockResolvedValue({ 
-        query: 'fail', 
-        mentions: [], 
-        flags: {}
+      vi.mocked(commandParser.parseCommand).mockResolvedValue({
+        ok: true,
+        context: {
+          query: 'fail',
+          mentions: [],
+          flags: {}
+        }
       });
       
       vi.mocked(wantlistApi.getWantList).mockRejectedValue(new Error('DB Error'));

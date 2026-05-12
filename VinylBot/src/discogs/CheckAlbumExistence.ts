@@ -10,11 +10,17 @@ const extractAlbumTitle = (discogsTitle: string) => {
 };
 
 export const CheckAlbumExistence = async (artist: string, album: string): Promise<DiscogResponse|null> => {
+  const consumerKey = process.env.DISCOG_KEY;
+  const consumerSecret = process.env.DISCOG_SECRET;
+  if (!consumerKey || !consumerSecret) {
+    throw new Error("Discogs DISCOG_KEY and DISCOG_SECRET must be set in the environment.");
+  }
+
   const client = new DiscogsClient({
     auth: {
       method: "discogs",
-      consumerKey: process.env.DISCOG_KEY!,
-      consumerSecret: process.env.DISCOG_SECRET!
+      consumerKey,
+      consumerSecret,
     }
   });
 

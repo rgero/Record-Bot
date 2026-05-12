@@ -8,37 +8,38 @@ import { getVinylsBySearchQuery } from "../services/vinyls.api.js";
 import { parseCommand } from "../utils/parseCommand.js";
 
 export const ProcessHave = async (message: Message) => {
-    let context = await parseCommand(message);
-    if (!context) return;
-    const { mentions, query, flags } = context;
+  try {
+    const parsed = await parseCommand(message);
+    if (!parsed.ok) {
+      if (parsed.error) await message.reply(`❌ ${parsed.error}`);
+      return;
+    }
+    const { mentions, query, flags } = parsed.context;
 
     const searchQuery: VinylSearchQuery = {
       owners: mentions.length > 0 ? mentions : undefined,
       search: query ? query.toLowerCase() : undefined,
-      tags: flags["tags"] && typeof flags["tags"] === 'string' ? flags["tags"].split(",").map((t: string) => t.toLowerCase()) : undefined,
-    }
+      tags: flags["tags"] && typeof flags["tags"] === "string" ? flags["tags"].split(",").map((t: string) => t.toLowerCase()) : undefined,
+    };
 
     let sort = "artist+";
-    if (flags.sort && typeof flags.sort === 'string') {
+    if (flags.sort && typeof flags.sort === "string") {
       if (validSorts.includes(flags.sort)) {
         sort = flags.sort;
       }
     }
 
-    try {
-      const list = sortVinyls(await getVinylsBySearchQuery(searchQuery), sort);
-      const title = `The Have List - ${list.length} vinyl(s) found`;
+    const list = sortVinyls(await getVinylsBySearchQuery(searchQuery), sort);
+    const title = `The Have List - ${list.length} vinyl(s) found`;
 
-      return await EmbeddedResponse({
-            message,
-            title,
-            list,
-            formatItem: (item, idx) => `${idx + 1}. **${escapeColons(item.artist)}** - ${escapeColons(item.album)}`,
-            color: 0x1db954,
-          });
-
-    } catch (error) {
-      console.error("Error occurred while fetching vinyls:", error);
-    }
-
-}
+    return await EmbeddedResponse({
+      message,
+      title,
+      list,
+      formatItem: (item, idx) => `${idx + 1}. **${escapeColons(item.artist)}** - ${escapeColons(item.album)}`,
+      color: 0x1db954,
+    });
+  } catch (error) {
+    console.error("Error occurred while fetching vinyls:", error);
+  }
+};

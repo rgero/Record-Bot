@@ -1,5 +1,4 @@
-import { EmbedBuilder } from "@discordjs/builders";
-import { Message } from "discord.js";
+import { EmbedBuilder, Message } from "discord.js";
 import { UUID } from "node:crypto";
 import { escapeColons } from "../utils/escapeColons.js";
 import { getPlayLogByID } from "../services/plays.api.js";

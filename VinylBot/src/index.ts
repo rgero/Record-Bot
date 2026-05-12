@@ -28,6 +28,14 @@ client.once("ready", () => {
   console.log(`Logged in as ${client.user?.tag}`);
 });
 
+client.on("error", (err) => {
+  console.error("Discord client error:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled rejection:", reason);
+});
+
 client.on("messageCreate", async (message: Message) => {
   if (message.author.bot) return;
   if (!message.content.startsWith("!")) return;
@@ -35,48 +43,60 @@ client.on("messageCreate", async (message: Message) => {
   const args = message.content.slice(1).trim().split(/\s+/);
   const command = args[0].toLowerCase();
 
-  switch (command) {
-    case "add":
-      return await ProcessAdd(message);
-      
-    case "exists":
-      return await ProcessCheckExists(message);
-  
-    case "have":
-      return await ProcessHave(message);
+  try {
+    switch (command) {
+      case "add":
+        return await ProcessAdd(message);
 
-    case "help":
-      return await ProcessHelp(message);
+      case "exists":
+        return await ProcessCheckExists(message);
 
-    case "info":
-      return await ProcessInfo(message);
+      case "have":
+        return await ProcessHave(message);
 
-    case "play":
-      return await ProcessPlay(message);
+      case "help":
+        return await ProcessHelp(message);
 
-    case "playlog":
-      return await ProcessPlaylog(message);
+      case "info":
+        return await ProcessInfo(message);
 
-    case "playlogs":
-      return await ProcessPlaylogs(message);
+      case "play":
+        return await ProcessPlay(message);
 
-    case "random":
-      return await ProcessRandomCommand(message);
+      case "playlog":
+        return await ProcessPlaylog(message);
 
-    case "tag":
-      return await ProcessList(message, "tag");
+      case "playlogs":
+        return await ProcessPlaylogs(message);
 
-    case "top":
-      return await ProcessTopCommand(message);
+      case "random":
+        return await ProcessRandomCommand(message);
 
-    case "unplayed":
-      return await ProcessUnplayed(message);
+      case "tag":
+        return await ProcessList(message, "tag");
 
-    case "want":
-      return await ProcessWant(message);
+      case "top":
+        return await ProcessTopCommand(message);
 
-    case "wantlist":
-      return await ProcessList(message, "want");
+      case "unplayed":
+        return await ProcessUnplayed(message);
+
+      case "want":
+        return await ProcessWant(message);
+
+      case "wantlist":
+        return await ProcessList(message, "want");
+
+      default:
+        await message.reply(`Unknown command \`${command}\`. Try \`!help\` for a list of commands.`);
+    }
+  } catch (err) {
+    console.error(`Error handling command "${command}":`, err);
+    try {
+      await message.reply("❌ Something went wrong while processing that command.");
+    } catch {
+      /* ignore reply failures */
+    }
   }
 });
 

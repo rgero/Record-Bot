@@ -1,7 +1,9 @@
+import { AddStatus } from "../interfaces/AddStatus.js";
 import { ItemCount } from "../interfaces/ItemCount.js";
 import { UUID } from "node:crypto";
 import { Vinyl } from "../interfaces/Vinyl.js";
 import { VinylSearchQuery } from "../interfaces/VinylSearchQuery.js";
+import { sanitizeForPostgrestIlikeOr } from "../utils/sanitizePostgrestIlike.js";
 import { sortVinyls } from "../utils/sortVinyls.js";
 import supabase from "./supabase.js";
 
@@ -27,7 +29,8 @@ export const getVinylsBySearchQuery = async (searchQuery: VinylSearchQuery): Pro
   }
 
   if (searchQuery.search) {
-    dbQuery = dbQuery.or(`artist.ilike.%${searchQuery.search}%,album.ilike.%${searchQuery.search}%`)
+    const safe = sanitizeForPostgrestIlikeOr(searchQuery.search);
+    dbQuery = dbQuery.or(`artist.ilike.%${safe}%,album.ilike.%${safe}%`);
   }
 
   if (searchQuery.tags && searchQuery.tags.length > 0) {
@@ -57,7 +60,8 @@ export const getVinylsByQuery = async (query: { type: string; term: string }): P
   if (query.type === 'user') {
     dbQuery = dbQuery.contains('owners', [query.term]);
   } else if (query.type === 'search') {
-    dbQuery = dbQuery.or(`artist.ilike.%${query.term}%,album.ilike.%${query.term}%`);
+    const safe = sanitizeForPostgrestIlikeOr(query.term);
+    dbQuery = dbQuery.or(`artist.ilike.%${safe}%,album.ilike.%${safe}%`);
   }
 
   const { data, error } = await dbQuery;
@@ -66,7 +70,8 @@ export const getVinylsByQuery = async (query: { type: string; term: string }): P
 };
 
 export const getFullVinylsByQuery = async (term: string): Promise<Vinyl[]> => {
-  const { data, error } = await supabase.from('vinyls').select(`*, purchaseLocation:locations (name)`).or(`artist.ilike.%${term}%,album.ilike.%${term}%`);
+  const safe = sanitizeForPostgrestIlikeOr(term);
+  const { data, error } = await supabase.from('vinyls').select(`*, purchaseLocation:locations (name)`).or(`artist.ilike.%${safe}%,album.ilike.%${safe}%`);
   if (error) throw error;
   return data ?? [];
 }
@@ -97,7 +102,6 @@ export const getVinylsByTags = async (tags: string[]): Promise<Vinyl[]> => {
 /**
  * MUTATIONS
 */
-export type AddStatus = "ADDED" | "DUPLICATE" | "ERROR";
 export const addVinyl = async (newVinyl: Omit<Vinyl, 'id'>): Promise<AddStatus> => {
   const { data, error } = await supabase.from("vinyls").insert({ ...newVinyl, playCount: 0 }).select('*').single();
   if (error) {
@@ -117,7 +121,7 @@ export const getArtistVinylCounts = async (): Promise<ItemCount[]> => {
   
   if (error) throw error;
 
-  const counts = data.reduce((acc: Record<string, number>, curr) => {
+  const counts = (data ?? []).reduce((acc: Record<string, number>, curr) => {
     acc[curr.artist] = (acc[curr.artist] || 0) + 1;
     return acc;
   }, {});
@@ -129,14 +133,14 @@ export const getVinylsByPlayCount = async (): Promise<ItemCount[]> => {
   const { data, error } = await supabase.from('vinyls').select('*').order('playCount', { ascending: false })
   if (error) throw error;
   
-  return data.map(vinyl => ({ title: `${vinyl.artist} - ${vinyl.album}`, count: vinyl.playCount || 0 }));
+  return (data ?? []).map(vinyl => ({ title: `${vinyl.artist} - ${vinyl.album}`, count: vinyl.playCount || 0 }));
 };
 
 export const getArtistVinylCountByUserId = async (userID: string): Promise<ItemCount[]> => {
   const { data, error } = await supabase.from('vinyls').select('artist').contains('owners', [userID]);
   if (error) throw error;
   
-  const counts = data.reduce((acc: Record<string, number>, curr) => {
+  const counts = (data ?? []).reduce((acc: Record<string, number>, curr) => {
     acc[curr.artist] = (acc[curr.artist] || 0) + 1;
     return acc;
   }, {});

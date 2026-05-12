@@ -35,13 +35,13 @@ export const ProcessHelp = async (message: Message) => {
             "`!random {person}`: Chooses a random vinyl liked by that person.\n" +
             "`!random {term}`: Chooses a random vinyl based on that term.\n" +
             "`!random --store`: Chooses a random store.\n" +
-            "`!random --tag {tags}`: Chooses a random vinyl based on the specified tags.\n" +
+            "`!random --tags {tags}`: Chooses a random vinyl based on the specified tags.\n" +
             "`!random --unplayed`: Chooses a random vinyl from your unplayed list.\n" +
             "`!info {album name}`: Gives you some info about the album.\n" +
             "`!tag {array of tags}`: Gives you a list of albums with the specified tags.\n" +
             "`!top {user}`: Returns top artists by album count (household if no user specified).\n" +
             "`!top --plays {user|artist}`: Returns top albums by play count.\n" +
-            "`!top --locations`: Returns the locations sorted by album count." + 
+            "`!top --locations`: Returns the locations sorted by album count.\n" +
             "`!unplayed`: Returns a list of unplayed albums in your collection."
         }
       )

@@ -4,16 +4,18 @@ import { ProcessRandomStore } from "./ProcessRandomStore.js";
 import { parseCommand } from "../../utils/parseCommand.js";
 
 export const ProcessRandomCommand = async (message: Message) => {
-  const context = await parseCommand(message);
-  if (!context) return;
+  const parsed = await parseCommand(message);
+  if (!parsed.ok) {
+    if (parsed.error) await message.reply(`❌ ${parsed.error}`);
+    return;
+  }
+  const context = parsed.context;
 
   const { flags } = context;
-  const activeFlags = Object.keys(flags).filter(key => flags[key] === true);
+  const activeFlags = Object.keys(flags).filter((key) => flags[key] === true);
 
   if (activeFlags.length > 1) {
-    await message.reply(
-      `⚠️ Multiple flags detected (**${activeFlags.join(", ")}**). Please provide only one flag.`
-    );
+    await message.reply(`⚠️ Multiple flags detected (**${activeFlags.join(", ")}**). Please provide only one flag.`);
     return;
   }
 

@@ -139,4 +139,15 @@ export const ProcessPlay = async (message: Message) => {
         await int.update({ content: `❌ Error: ${e.message}`, components: [] }); 
     }
   });
+
+  collector.on("end", async (collected, reason) => {
+    if (reason === "time" && collected.size === 0) {
+      await reply
+        .edit({
+          content: "⚠️ Selection timed out. Please run `!play` again.",
+          components: [],
+        })
+        .catch(() => null);
+    }
+  });
 };

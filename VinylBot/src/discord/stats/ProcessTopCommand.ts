@@ -6,16 +6,18 @@ import { ProcessTopLocation } from "./ProcessTopLocation.js";
 import { parseCommand } from "../../utils/parseCommand.js";
 
 export const ProcessTopCommand = async (message: Message) => {
-  const context = await parseCommand(message);
-  if (!context) return;
+  const parsed = await parseCommand(message);
+  if (!parsed.ok) {
+    if (parsed.error) await message.reply(`❌ ${parsed.error}`);
+    return;
+  }
+  const context = parsed.context;
 
   const { flags } = context;
-  const activeFlags = Object.keys(flags).filter(key => flags[key] === true);
+  const activeFlags = Object.keys(flags).filter((key) => flags[key] === true);
 
   if (activeFlags.length > 1) {
-    await message.reply(
-      `⚠️ Multiple flags detected (**${activeFlags.join(", ")}**). Please provide only one flag at a time.`
-    );
+    await message.reply(`⚠️ Multiple flags detected (**${activeFlags.join(", ")}**). Please provide only one flag at a time.`);
     return;
   }
 
@@ -24,15 +26,15 @@ export const ProcessTopCommand = async (message: Message) => {
 
     switch (flag) {
       case "artist":
-        return ProcessTopArtists(message);
+        return ProcessTopArtists(message, context);
       case "locations":
-        return ProcessTopLocation(message);
+        return ProcessTopLocation(message, context);
       case "plays":
-        return ProcessPlayCount(message);
+        return ProcessPlayCount(message, context);
       default:
         await message.reply(`⚠️ The flag --**${flag}** is not supported for this command.`);
         return;
     }
   }
-  return ProcessTop(message);
+  return ProcessTop(message, context);
 };

@@ -28,9 +28,12 @@ describe('parseCommand', () => {
     const result = await parseCommand(message);
     
     expect(result).toEqual({ 
-      mentions: [], 
-      flags: {}, // Changed from [] to {}
-      query: "" 
+      ok: true,
+      context: {
+        mentions: [], 
+        flags: {},
+        query: "" 
+      }
     });
   });
 
@@ -47,22 +50,26 @@ describe('parseCommand', () => {
     const message = createMockMessage("!have <@123> Pink Floyd", mentions);
     const result = await parseCommand(message);
 
-    expect(result?.mentions).toContain(mockDbId);
-    expect(result?.query).toBe("Pink Floyd");
+    expect(result.ok && result.context.mentions).toContain(mockDbId);
+    expect(result.ok && result.context.query).toBe("Pink Floyd");
   });
 
   it('should extract flags and scrub them from the query', async () => {
     vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map());
-    // Note: your code handles em-dash (—) by converting it to --
     const message = createMockMessage("!have Dark Side --vinyl —cd");
     const result = await parseCommand(message);
 
-    // Flags should be an object with boolean values for simple flags
-    expect(result?.flags).toEqual({
-      vinyl: true,
-      cd: true
+    expect(result).toEqual({
+      ok: true,
+      context: {
+        mentions: [],
+        flags: {
+          vinyl: true,
+          cd: true
+        },
+        query: "Dark Side"
+      }
     });
-    expect(result?.query).toBe("Dark Side");
   });
 
   it('should handle value-based flags', async () => {
@@ -70,10 +77,16 @@ describe('parseCommand', () => {
     const message = createMockMessage("!have --sort artist+ Rise Against");
     const result = await parseCommand(message);
 
-    expect(result?.flags).toEqual({
-      sort: 'artist+'
+    expect(result).toEqual({
+      ok: true,
+      context: {
+        mentions: [],
+        flags: {
+          sort: 'artist+'
+        },
+        query: "Rise Against"
+      }
     });
-    expect(result?.query).toBe("Rise Against");
   });
 
   it('should handle complex mixed inputs', async () => {
@@ -87,17 +100,23 @@ describe('parseCommand', () => {
     const result = await parseCommand(message);
 
     expect(result).toEqual({
-      mentions: ['uuid-123'],
-      flags: { detailed: true }, // Changed from ['detailed']
-      query: 'Radiohead'
+      ok: true,
+      context: {
+        mentions: ['uuid-123'],
+        flags: { detailed: true },
+        query: 'Radiohead'
+      }
     });
   });
 
-  it('should throw error when a value-flag is missing its argument', async () => {
+  it('should return an error when a value-flag is missing its argument', async () => {
     vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map());
     const message = createMockMessage("!have --sort");
     
-    // Test for the explicit error handling you added in the code
-    await expect(parseCommand(message)).rejects.toThrow('The flag `--sort` requires an argument');
+    const result = await parseCommand(message);
+    expect(result).toEqual({
+      ok: false,
+      error: 'The flag `--sort` requires an argument (e.g., `--sort value`).',
+    });
   });
 });

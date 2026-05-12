@@ -72,9 +72,9 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
 
     let titleSuffix = "";
 
-    if (mentions && mentions.length > 1)
-    {
+    if (mentions && mentions.length > 1) {
       await message.reply("❌ Can only have 1 mention");
+      return;
     }
 
     targetUser = await getUserByName(getDropdownValue(message.author.username));

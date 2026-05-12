@@ -5,7 +5,10 @@ import supabase from "./supabase.js";
 
 export const getLocations = async (): Promise<Location[]> => {
   const { data, error } = await supabase.from('locations').select('*');
-  if (error) console.error(error);
+  if (error) {
+    console.error(error);
+    return [];
+  }
 
   return data ?? [];
 }

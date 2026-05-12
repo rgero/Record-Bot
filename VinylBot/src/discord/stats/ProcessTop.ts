@@ -3,15 +3,13 @@ import { getArtistVinylCountByUserId, getArtistVinylCounts } from "../../service
 import { EmbeddedResponse } from "../../utils/discord/EmbeddedResponse.js";
 import { ItemCount } from "../../interfaces/ItemCount.js";
 import { Message } from "discord.js";
+import { CommandContext } from "../../utils/parseCommand.js";
 import { escapeColons } from "../../utils/escapeColons.js";
 import { getNameById } from "../../services/users.api.js";
-import { parseCommand } from "../../utils/parseCommand.js";
 
-export const ProcessTop = async (message: Message) => {
+export const ProcessTop = async (message: Message, context: CommandContext) => {
   try {
-    const context = await parseCommand(message);
-    if (!context) return;
-    const {mentions, query} = context;
+    const { mentions, query } = context;
 
     if (mentions.length > 1) {
       await message.reply("❌ Invalid usage. Please mention only one user or leave the command empty.");
@@ -25,10 +23,7 @@ export const ProcessTop = async (message: Message) => {
     let titleSuffix = "";
 
     if (mentions.length === 1) {
-      const [userName, userList] = await Promise.all([
-        getNameById(mentions[0]),
-        getArtistVinylCountByUserId(mentions[0]),
-      ]);
+      const [userName, userList] = await Promise.all([getNameById(mentions[0]), getArtistVinylCountByUserId(mentions[0])]);
 
       list = userList;
       titleSuffix = `for ${userName}`;
@@ -40,8 +35,7 @@ export const ProcessTop = async (message: Message) => {
       message,
       title: `Top Artists by Album Count ${titleSuffix}`.trim(),
       list,
-      formatItem: (item, idx) =>
-        `${idx + 1}. **${escapeColons(item.title)}** - ${item.count}`,
+      formatItem: (item, idx) => `${idx + 1}. **${escapeColons(item.title)}** - ${item.count}`,
     });
   } catch (error) {
     console.error("Error in ProcessTop:", error);

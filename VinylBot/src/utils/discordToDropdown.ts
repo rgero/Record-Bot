@@ -1,15 +1,17 @@
 import fs from "fs";
 import path from "path";
 
-export const getDropdownValue = (user: string) => {
-  try {
-    let mapping: { [key: string]: string } = {};
-    const data = fs.readFileSync(path.resolve("./discordMapping.json"), "utf8");
-    mapping = JSON.parse(data);
-    return mapping[user] || "Unknown";
+let mappingCache: Record<string, string> | null = null;
 
-  } catch (err) {
-    console.error("Failed to load discordMapping.json", err);
-    return "Unknown";
+export const getDropdownValue = (user: string) => {
+  if (mappingCache === null) {
+    try {
+      const data = fs.readFileSync(path.resolve("./discordMapping.json"), "utf8");
+      mappingCache = JSON.parse(data) as Record<string, string>;
+    } catch (err) {
+      console.error("Failed to load discordMapping.json", err);
+      mappingCache = {};
+    }
   }
+  return mappingCache[user] || "Unknown";
 };

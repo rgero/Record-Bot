@@ -9,8 +9,11 @@ export const getUsers = async (): Promise<User[]> => {
 }
 
 export const getUserByName = async (name: string): Promise<User|null> => {
-  const {data, error} = await supabase.from('users').select('*').ilike("name", name).single();
-  if (error) console.log(error);
+  const { data, error } = await supabase.from('users').select('*').ilike("name", name).maybeSingle();
+  if (error) {
+    console.error(error);
+    return null;
+  }
   return data ?? null;
 }
 

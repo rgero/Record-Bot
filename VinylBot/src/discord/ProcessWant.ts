@@ -62,6 +62,6 @@ export const ProcessWant = async (message: Message) => {
   } catch (err) {
     console.error("ProcessWant Error:", err);
     const errorMsg = err instanceof Error ? err.message : "Unknown error";
-    message.reply(`❌ Error: ${errorMsg}`);
+    await message.reply(`❌ Error: ${errorMsg}`);
   }
 };

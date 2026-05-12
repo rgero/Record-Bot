@@ -3,51 +3,47 @@ import { getPlayLogs, getPlaylogsByUserIDs } from "../services/plays.api.js";
 import { Message } from "discord.js";
 import { PlayLog } from "../interfaces/PlayLog.js";
 import { UUID } from "node:crypto";
+import { CommandContext } from "./parseCommand.js";
 import { getDropdownValue } from "./discordToDropdown.js";
-import { parseCommand } from "./parseCommand.js";
 import { resolveUserMap } from "./resolveUserMap.js";
 
-export const GetPlaysList = async (message: Message): Promise<Partial<PlayLog>[]> => {
+export const GetPlaysList = async (message: Message, context: CommandContext): Promise<Partial<PlayLog>[]> => {
   try {
-    let context = await parseCommand(message);
-    if (!context) return [];
-
     const { mentions, flags, query } = context;
     const userMap = await resolveUserMap();
 
     const requesterName = getDropdownValue(message.author.username).toLowerCase();
     const requesterIds = userMap.get(requesterName) as UUID[] | undefined;
 
-    const targetIDs: UUID[] = (mentions && mentions.length > 0) ? (mentions as UUID[]) : (requesterIds || []);
-    
-    let limit: number = 0;
-    if (flags.limit)
-    {
+    const targetIDs: UUID[] = mentions && mentions.length > 0 ? (mentions as UUID[]) : requesterIds || [];
+
+    let limit = 0;
+    if (flags.limit) {
       limit = Number(flags.limit);
     }
 
     let targetList: PlayLog[] = [];
-    if (flags.all)
-    {
+    if (flags.all) {
       targetList = await getPlayLogs(limit);
     } else {
       targetList = await getPlaylogsByUserIDs(targetIDs, limit);
     }
 
-    const filterList = query ? targetList.filter(play => {
-      const searchTerm = query.toLowerCase();
-      const artistMatch = play.artist?.toLowerCase().includes(searchTerm);
-      const albumMatch = play.album?.toLowerCase().includes(searchTerm);
-      return artistMatch || albumMatch;
-    }) : targetList;  
+    const filterList = query
+      ? targetList.filter((play) => {
+          const searchTerm = query.toLowerCase();
+          const artistMatch = play.artist?.toLowerCase().includes(searchTerm);
+          const albumMatch = play.album?.toLowerCase().includes(searchTerm);
+          return artistMatch || albumMatch;
+        })
+      : targetList;
 
     return filterList.map((play) => ({
       id: Number(play.id) ?? -1,
       artist: play.artist ?? "Unknown Artist",
       album: play.album ?? "Unknown Album",
     }));
-
   } catch {
-    throw new Error("Error: Cannot get plays list")
+    return [];
   }
-}
+};

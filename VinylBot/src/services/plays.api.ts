@@ -1,10 +1,16 @@
 import { ItemCount } from "../interfaces/ItemCount.js";
 import { PlayLog } from "../interfaces/PlayLog.js";
 import { UUID } from "node:crypto";
+import { sanitizeForPostgrestIlikeOr } from "../utils/sanitizePostgrestIlike.js";
 import supabase from "./supabase.js";
 
+type PlayLogAlbumRow = {
+  album_id: number;
+  vinyls?: { artist?: string; album?: string } | null;
+};
+
 /// Utility Functions
-const aggregateAlbumCounts = (playLogs: any[]): ItemCount[] => {
+const aggregateAlbumCounts = (playLogs: PlayLogAlbumRow[]): ItemCount[] => {
   const albumCountMap: Record<number, ItemCount> = {};
 
   playLogs.forEach((p) => {
@@ -120,21 +126,22 @@ export const getTopPlayedAlbumsByUserID = async (userID: string): Promise<ItemCo
     return [];
   }
 
-  return aggregateAlbumCounts(data || []);
+  return aggregateAlbumCounts((data as PlayLogAlbumRow[]) || []);
 };
 
 export const getSortedPlaysByQuery = async (query: string): Promise<ItemCount[]> => {
+  const safe = sanitizeForPostgrestIlikeOr(query);
   const { data, error } = await supabase
     .from("playlogs")
     .select("album_id, vinyls!inner(artist, album)")
-    .or(`artist.ilike.%${query}%,album.ilike.%${query}%`, { foreignTable: "vinyls" });
+    .or(`artist.ilike.%${safe}%,album.ilike.%${safe}%`, { foreignTable: "vinyls" });
 
   if (error) {
     console.error("Error fetching query plays:", error);
     return [];
   }
 
-  return aggregateAlbumCounts(data || []);
+  return aggregateAlbumCounts((data as PlayLogAlbumRow[]) || []);
 };
 
 export const getTopArtistsByPlay = async (userID?: string): Promise<ItemCount[]> => {

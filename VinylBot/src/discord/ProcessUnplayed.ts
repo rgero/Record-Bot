@@ -11,16 +11,20 @@ import { resolveUserMap } from "../utils/resolveUserMap.js";
 import { validSorts } from "../utils/sortVinyls.js";
 
 export const ProcessUnplayed = async (message: Message) => {
-  const context: CommandContext|undefined = await parseCommand(message);
-  if (!context) return;
+  const parsed = await parseCommand(message);
+  if (!parsed.ok) {
+    if (parsed.error) await message.reply(`❌ ${parsed.error}`);
+    return;
+  }
+  const context: CommandContext = parsed.context;
 
   const { mentions, query, flags } = context;
   const userMap = await resolveUserMap();
-  
+
   const requesterName = getDropdownValue(message.author.username).toLowerCase();
   const requesterIds = userMap.get(requesterName) as UUID[] | undefined;
 
-  const targetIDs: UUID[] = (mentions && mentions.length > 0) ? (mentions as UUID[]) : (requesterIds || []);
+  const targetIDs: UUID[] = mentions && mentions.length > 0 ? (mentions as UUID[]) : requesterIds || [];
 
   if (targetIDs.length === 0) {
     return message.reply("⚠️ You are not registered or no users were found.");
@@ -31,12 +35,10 @@ export const ProcessUnplayed = async (message: Message) => {
       const rawData = await getUnplayedVinylCounts(targetIDs);
       const namedData = await Promise.all(
         rawData.map(async (item) => ({
-          userName: await getNameById(item.title), 
-          count: item.count
+          userName: await getNameById(item.title),
+          count: item.count,
         }))
       );
-
-      console.log(namedData);
 
       return await EmbeddedResponse({
         message,
@@ -52,7 +54,7 @@ export const ProcessUnplayed = async (message: Message) => {
     }
 
     let sort = "artist+";
-    if (flags.sort && typeof flags.sort === 'string') {
+    if (flags.sort && typeof flags.sort === "string") {
       if (validSorts.includes(flags.sort)) {
         sort = flags.sort;
       }
@@ -72,7 +74,6 @@ export const ProcessUnplayed = async (message: Message) => {
       formatItem: (item, idx) => `${idx + 1}. **${escapeColons(item.artist)}** - ${escapeColons(item.album)}`,
       color: 0x3498db,
     });
-
   } catch (error) {
     console.error("ProcessUnplayed Error:", error);
     return message.reply("❌ An error occurred while fetching vinyl data.");

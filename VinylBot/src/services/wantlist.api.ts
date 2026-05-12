@@ -1,4 +1,6 @@
+import { AddStatus } from "../interfaces/AddStatus.js";
 import { WantedItem } from "../interfaces/WantedItem.js";
+import { sanitizeForPostgrestIlikeOr } from "../utils/sanitizePostgrestIlike.js";
 import supabase from "./supabase.js";
 
 export const getWantList = async (query: { type: string; term: string }): Promise<WantedItem[]> => {
@@ -7,16 +9,16 @@ export const getWantList = async (query: { type: string; term: string }): Promis
   if (query.type === 'user') {
     dbQuery = dbQuery.contains('searcher', [query.term]);
   } else if (query.type === 'search') {
-    dbQuery = dbQuery.or(`artist.ilike.%${query.term}%,album.ilike.%${query.term}%`);
+    const safe = sanitizeForPostgrestIlikeOr(query.term);
+    dbQuery = dbQuery.or(`artist.ilike.%${safe}%,album.ilike.%${safe}%`);
   }
 
   const { data, error } = await dbQuery;
   if (error) throw error;
-  return data;
+  return data ?? [];
 };
 
 
-export type AddStatus = "ADDED" | "DUPLICATE" | "ERROR";
 export const addWantedItem = async (newWantedItem: WantedItem): Promise<AddStatus> => {
   // Wanted Items now has a unique constraint that the Artist + Album together must be unique.
   // Apparently this will return an error code of 23505 if violated.

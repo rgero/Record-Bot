@@ -58,6 +58,6 @@ export const ProcessAdd = async (message: Message) => {
   } catch (err) {
     console.error("ProcessAdd Error:", err);
     const errorMsg = err instanceof Error ? err.message : "Unknown error";
-    message.reply(`❌ Error: ${errorMsg}`);
+    await message.reply(`❌ Error: ${errorMsg}`);
   }
-}
+};

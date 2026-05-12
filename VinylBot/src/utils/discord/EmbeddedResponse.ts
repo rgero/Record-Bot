@@ -28,7 +28,7 @@ export const EmbeddedResponse = async <T>({message, title, list, pageSize = 10, 
     return new EmbedBuilder()
       .setTitle(`${title} (Page ${page + 1}/${totalPages})`)
       .setDescription(description || "No items found on this page.")
-      .setColor(color ?? 0x1db954);;
+      .setColor(color ?? 0x1db954);
   };
 
   const generateRow = (page: number) =>

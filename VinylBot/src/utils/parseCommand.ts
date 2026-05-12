@@ -11,9 +11,11 @@ export interface CommandContext {
   query: string;
 }
 
-export const parseCommand = async (message: Message): Promise<CommandContext | undefined> => {
+export type ParseCommandResult = { ok: true; context: CommandContext } | { ok: false; error?: string };
+
+export const parseCommand = async (message: Message): Promise<ParseCommandResult> => {
   const words = message.content.split(/\s+/).filter(Boolean);
-  if (words.length === 0) return undefined;
+  if (words.length === 0) return { ok: false };
 
   const tokens = words.slice(1);
   let returnValue: CommandContext = {
@@ -50,7 +52,10 @@ export const parseCommand = async (message: Message): Promise<CommandContext | u
       if (expectsValue) {
         // ERROR HANDLING: Check if nextToken is missing or is another flag/mention
         if (!nextToken || nextToken.startsWith("--") || nextToken.startsWith("<@") || nextToken.startsWith("—")) {
-          throw new Error(`The flag \`--${flagName}\` requires an argument (e.g., \`--${flagName} value\`).`);
+          return {
+            ok: false,
+            error: `The flag \`--${flagName}\` requires an argument (e.g., \`--${flagName} value\`).`,
+          };
         }
 
         returnValue.flags[flagName] = nextToken;
@@ -66,5 +71,5 @@ export const parseCommand = async (message: Message): Promise<CommandContext | u
   }
 
   returnValue.query = queryParts.join(" ").trim();
-  return returnValue;
+  return { ok: true, context: returnValue };
 };
