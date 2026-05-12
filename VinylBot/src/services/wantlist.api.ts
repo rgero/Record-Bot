@@ -1,9 +1,8 @@
-import { SearchResponse } from "../interfaces/SearchResponse.js";
 import { WantedItem } from "../interfaces/WantedItem.js";
 import supabase from "./supabase.js";
 
-export const getWantList = async (query: { type: string; term: string }): Promise<SearchResponse[]> => {
-  let dbQuery = supabase.from('wanted_items').select('artist, album');
+export const getWantList = async (query: { type: string; term: string }): Promise<WantedItem[]> => {
+  let dbQuery = supabase.from('wanted_items').select('*');
 
   if (query.type === 'user') {
     dbQuery = dbQuery.contains('searcher', [query.term]);

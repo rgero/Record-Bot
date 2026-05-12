@@ -1,9 +1,8 @@
 import { sortVinyls, validSorts } from "../utils/sortVinyls.js";
 
+import { BaseVinyl } from "../interfaces/BaseVinyl.js";
 import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse.js";
 import { Message } from "discord.js";
-import { SearchResponse } from "../interfaces/SearchResponse.js";
-import { Vinyl } from "../interfaces/Vinyl.js";
 import { escapeColons } from "../utils/escapeColons.js";
 import { getNameById } from "../services/users.api.js";
 import { getVinylsByTags } from "../services/vinyls.api.js";
@@ -38,7 +37,7 @@ export const ProcessList = async (message: Message, listType: 'want' | 'tag') =>
       }
     }
 
-let list: (Vinyl | SearchResponse)[] = [];
+let list: BaseVinyl[] = [];
     let listName = "Collection"
     switch(listType) {
       case 'tag':

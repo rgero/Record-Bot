@@ -1,10 +1,9 @@
+import { BaseVinyl } from "./BaseVinyl";
 import { Location } from "./Location";
 
-export interface Vinyl {
-  id?: number;
+export interface Vinyl extends BaseVinyl{
+  // Properties inherited from BaseVinyl: id, artist, album
   purchaseNumber?: number;
-  artist: string;
-  album: string;
   color?: string;
   purchaseDate: string;
   purchasedBy?: string[];

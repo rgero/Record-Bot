@@ -2,7 +2,7 @@ import { ActionRowBuilder, ComponentType, Message, MessageActionRowComponentBuil
 import { getVinylID, getVinylsByQuery } from "../services/vinyls.api.js";
 
 import { PlayLog } from "../interfaces/PlayLog.js";
-import { SearchResponse } from "../interfaces/SearchResponse.js";
+import { Vinyl } from "../interfaces/Vinyl.js";
 import { addPlayLog } from "../services/plays.api.js";
 import { escapeColons } from "../utils/escapeColons.js";
 import { getDropdownValue } from "../utils/discordToDropdown.js";
@@ -78,7 +78,7 @@ export const ProcessPlay = async (message: Message) => {
   if (data.length === 0) return message.reply("No matching albums found!");
 
   if (data.length === 1) {
-    const res: SearchResponse = data[0];
+    const res: Vinyl = data[0];
     try {
       if (!res.id) {throw new Error("Search Response does not have ID")}
       const newPlay: PlayLog = { 

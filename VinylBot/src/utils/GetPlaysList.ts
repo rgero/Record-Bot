@@ -1,12 +1,12 @@
 import { Message } from "discord.js";
-import { SearchResponse } from "../interfaces/SearchResponse.js";
+import { PlayLog } from "../interfaces/PlayLog.js";
 import { UUID } from "node:crypto";
 import { getDropdownValue } from "./discordToDropdown.js";
 import { getPlaylogsByUserIDs } from "../services/plays.api.js";
 import { parseCommand } from "./parseCommand.js";
 import { resolveUserMap } from "./resolveUserMap.js";
 
-export const GetPlaysList = async (message: Message): Promise<SearchResponse[]> => {
+export const GetPlaysList = async (message: Message): Promise<Partial<PlayLog>[]> => {
   try {
     let context = await parseCommand(message);
     if (!context) return [];

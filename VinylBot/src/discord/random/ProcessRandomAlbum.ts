@@ -5,7 +5,7 @@ import { getUserById, getUserByName } from "../../services/users.api.js";
 import { CommandContext } from "../../utils/parseCommand.js";
 import { PlayLog } from "../../interfaces/PlayLog.js";
 import { User } from "../../interfaces/User.js";
-import { SearchResponse as Vinyl } from "../../interfaces/SearchResponse.js";
+import { Vinyl } from "../../interfaces/Vinyl.js";
 import { addPlayLog } from "../../services/plays.api.js";
 import { escapeColons } from "../../utils/escapeColons.js";
 import { getDropdownValue } from "../../utils/discordToDropdown.js";

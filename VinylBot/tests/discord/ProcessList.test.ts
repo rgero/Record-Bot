@@ -4,9 +4,10 @@ import * as wantlistApi from '../../src/services/wantlist.api';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { BaseVinyl } from '../../src/interfaces/BaseVinyl';
 import { Message } from 'discord.js';
 import { ProcessList } from '../../src/discord/ProcessList';
-import { SearchResponse } from '../../src/interfaces/SearchResponse';
+import { WantedItem } from '../../src/interfaces/WantedItem';
 
 vi.mock('../../src/services/vinyls.api');
 vi.mock('../../src/services/wantlist.api');
@@ -26,11 +27,10 @@ describe('ProcessList Integration Tests', () => {
     }),
   } as unknown as Message);
 
-  const mockSearchItem = (artist: string, album: string): SearchResponse => ({
+  // Updated to use BaseVinyl
+  const mockVinylItem = (artist: string, album: string): BaseVinyl => ({
     artist,
     album,
-    owners: [],
-    searcher: []
   });
 
   beforeEach(() => {
@@ -48,12 +48,12 @@ describe('ProcessList Integration Tests', () => {
 
       vi.mocked(commandParser.parseCommand).mockResolvedValue(mockContext);
       vi.mocked(wantlistApi.getWantList).mockResolvedValue([
-        mockSearchItem('Rise Against', 'The Unraveling')
+        mockVinylItem('Rise Against', 'The Unraveling') as WantedItem
       ]);
 
       await ProcessList(mockMessage, 'want');
 
-      expect(wantlistApi.getWantList).toHaveBeenCalledWith({term: 'Rise Against', type: 'search'});
+      expect(wantlistApi.getWantList).toHaveBeenCalledWith({ term: 'Rise Against', type: 'search' });
       
       const replyCall = vi.mocked(mockMessage.reply).mock.calls[0][0] as any;
       expect(replyCall.embeds[0].data.title).toContain('Want List matches for "Rise Against"');
@@ -64,25 +64,21 @@ describe('ProcessList Integration Tests', () => {
     it('should reply with a warning if the query returns no results', async () => {
       const mockMessage = createMockMessage('!want NonExistentArtist');
       
-      // Setup context to trigger the 'search' type in the switch default
       vi.mocked(commandParser.parseCommand).mockResolvedValue({ 
         query: 'NonExistentArtist', 
         mentions: [], 
         flags: {}
       });
 
-      // We must mock getWantList because that's what the 'want' case calls
       vi.mocked(wantlistApi.getWantList).mockResolvedValue([]);
 
       await ProcessList(mockMessage, 'want');
 
-      // EmbeddedResponse checks list.length and calls message.reply
       expect(mockMessage.reply).toHaveBeenCalledWith(expect.stringContaining('❌ No items found'));
     });
 
     it('should handle API errors gracefully', async () => {
       const mockMessage = createMockMessage('!want error');
-      // Prevent console.error from cluttering test output
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       vi.mocked(commandParser.parseCommand).mockResolvedValue({ 
@@ -91,7 +87,6 @@ describe('ProcessList Integration Tests', () => {
         flags: {}
       });
       
-      // Mock the actual function used in the 'default' switch case
       vi.mocked(wantlistApi.getWantList).mockRejectedValue(new Error('DB Error'));
 
       await ProcessList(mockMessage, 'want');

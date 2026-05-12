@@ -1,5 +1,4 @@
 import { AlbumCount } from "../interfaces/AlbumCount.js";
-import { SearchResponse } from "../interfaces/SearchResponse.js";
 import { UUID } from "node:crypto";
 import { UnplayedRecord } from "../interfaces/UnplayedRecord.js";
 import { Vinyl } from "../interfaces/Vinyl.js";
