@@ -160,7 +160,7 @@ export const haveVinyl = async (query: {artist: string, album: string}): Promise
   return !!data;
 }
 
-export const getUnplayedVinyls = async (userID: string, mention?: string, query?: string, sort?: string): Promise<Vinyl[]> => {
+export const getUnplayedVinyls = async (userID: string, query?: string, sort?: string): Promise<Vinyl[]> => {
   const { data, error } = await supabase.rpc('get_unplayed_vinyls', { target_user_id: userID });
 
   if (error) {
@@ -169,13 +169,6 @@ export const getUnplayedVinyls = async (userID: string, mention?: string, query?
   }
 
   let filteredData: Vinyl[] = data || [];
-
-  // Filter by mention (owner)
-  if (mention) {
-    filteredData = filteredData.filter((item: Vinyl) => 
-      Array.isArray(item.owners) && item.owners.includes(mention)
-    );
-  }
 
   // Filter by search query
   if (query) {

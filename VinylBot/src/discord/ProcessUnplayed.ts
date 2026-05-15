@@ -60,11 +60,17 @@ export const ProcessUnplayed = async (message: Message) => {
       }
     }
 
-    const userID = targetIDs[0];
-    const data = await getUnplayedVinyls(userID, mentions[0], query, sort);
+    const userID = mentions[0] ?? targetIDs[0];
+    let data = await getUnplayedVinyls(userID, query, sort);
 
     if (!data || data.length === 0) {
       return message.reply("🎉 No unplayed records found!");
+    }
+
+    if (flags.mine)
+    {
+      const mineID = targetIDs[0];
+      data = data.filter((item) => item.owners.includes(mineID));
     }
 
     return await EmbeddedResponse({
