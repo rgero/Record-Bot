@@ -1,9 +1,9 @@
 import { getPlayLogs, getPlaylogsByUserIDs } from "../services/plays.api.js";
 
+import { CommandContext } from "./parseCommand.js";
 import { Message } from "discord.js";
 import { PlayLog } from "../interfaces/PlayLog.js";
 import { UUID } from "node:crypto";
-import { CommandContext } from "./parseCommand.js";
 import { getDropdownValue } from "./discordToDropdown.js";
 import { resolveUserMap } from "./resolveUserMap.js";
 
@@ -15,18 +15,18 @@ export const GetPlaysList = async (message: Message, context: CommandContext): P
     const requesterName = getDropdownValue(message.author.username).toLowerCase();
     const requesterIds = userMap.get(requesterName) as UUID[] | undefined;
 
-    const targetIDs: UUID[] = mentions && mentions.length > 0 ? (mentions as UUID[]) : requesterIds || [];
-
     let limit = 0;
     if (flags.limit) {
       limit = Number(flags.limit);
     }
 
     let targetList: PlayLog[] = [];
-    if (flags.all) {
-      targetList = await getPlayLogs(limit);
+    if (flags.mine) {
+      targetList = await getPlaylogsByUserIDs(requesterIds as UUID[], limit);
+    } else if (mentions && mentions.length > 0) {
+      targetList = await getPlaylogsByUserIDs(mentions as UUID[], limit);
     } else {
-      targetList = await getPlaylogsByUserIDs(targetIDs, limit);
+      targetList = await getPlayLogs(limit);
     }
 
     const filterList = query
