@@ -2,14 +2,61 @@ import { DiscogResponse } from "../interfaces/DiscogResponse.js";
 import { DiscogsClient } from "@lionralfs/discogs-client";
 import { compareTwoStrings } from "string-similarity";
 
-const normalize = (str: string) => str.toLowerCase().replace(/[^\w\s]/g, "").replace(/\s+/g, " ").trim();
+const TITLE_SPLIT = /\s[-–]\s/;
+
+/** Lowercase and strip punctuation for fuzzy comparison only — never used as regex input. */
+const normalize = (str: string) =>
+  str
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const extractArtistFromTitle = (discogsTitle: string) => {
+  const parts = discogsTitle.split(TITLE_SPLIT);
+  return parts.length > 1 ? parts[0] : "";
+};
 
 const extractAlbumTitle = (discogsTitle: string) => {
-  const parts = discogsTitle.split(/\s[-–]\s/);
+  const parts = discogsTitle.split(TITLE_SPLIT);
   return parts.length > 1 ? parts.slice(1).join(" - ") : discogsTitle;
 };
 
-export const CheckAlbumExistence = async (artist: string, album: string): Promise<DiscogResponse|null> => {
+const isVinylVersion = (v: { format?: string; major_formats?: string[]; title?: string }) => {
+  const formatStr = (v.format || "").toLowerCase();
+  const majorFormats = (v.major_formats || []).map((f) => f.toLowerCase());
+  const isVinyl = formatStr.includes("vinyl") || majorFormats.includes("vinyl");
+  const isPromo = (v.title || "").toLowerCase().includes("promo");
+  return isVinyl && !isPromo;
+};
+
+const scoreMatch = (artist: string, album: string, discogsTitle: string) => {
+  const targetArtist = normalize(artist);
+  const targetAlbum = normalize(album);
+  const discogsArtist = normalize(extractArtistFromTitle(discogsTitle));
+  const discogsAlbum = normalize(extractAlbumTitle(discogsTitle));
+  const selfTitled = targetArtist.length > 0 && targetArtist === targetAlbum;
+
+  const artistScore =
+    discogsArtist.length > 0
+      ? compareTwoStrings(targetArtist, discogsArtist)
+      : compareTwoStrings(`${targetArtist} ${targetAlbum}`, discogsTitle.toLowerCase());
+
+  const albumScore = compareTwoStrings(targetAlbum, discogsAlbum);
+  const minAlbumScore = selfTitled ? 0.65 : 0.75;
+
+  return { artistScore, albumScore, minAlbumScore, passes: artistScore >= 0.55 && albumScore >= minAlbumScore };
+};
+
+const notFound = (artist: string, album: string): DiscogResponse => ({
+  title: `${artist} - ${album}`,
+  exists: false,
+});
+
+export const CheckAlbumExistence = async (
+  artist: string,
+  album: string
+): Promise<DiscogResponse> => {
   const consumerKey = process.env.DISCOG_KEY;
   const consumerSecret = process.env.DISCOG_SECRET;
   if (!consumerKey || !consumerSecret) {
@@ -21,57 +68,54 @@ export const CheckAlbumExistence = async (artist: string, album: string): Promis
       method: "discogs",
       consumerKey,
       consumerSecret,
-    }
+    },
   });
 
   const db = client.database();
+  const searchParams = { type: "master" as const, per_page: 25 };
 
-  const search = await db.search({
-    query: `${artist} ${album}`,
-    type: "master",
-    per_page: 10
-  });
+  let results =
+    (
+      await db.search({
+        ...searchParams,
+        artist,
+        release_title: album,
+      })
+    ).data.results ?? [];
 
-  const results = search.data.results;
-  if (!results.length) return {
-    title: `${artist} - ${album}`,
-    exists: false,
-  };
-
-  const targetAlbum = normalize(album);
-
-  const scoredResults = results.map(r => ({
-      ...r,
-      score: compareTwoStrings(
-        `${artist} ${album}`.toLowerCase(),
-        r.title.toLowerCase()
-      )
-    })).filter(r => r.score > 0.4).sort((a, b) => b.score - a.score);
-
-  for (const match of scoredResults) {
-    const discogsAlbum = normalize(extractAlbumTitle(match.title));
-    const albumScore = compareTwoStrings(targetAlbum, discogsAlbum);
-    if (albumScore < 0.8) continue;
-
-    const versionsRes = await db.getMasterVersions(match.id);
-    const versions = versionsRes.data.versions;
-    if (!versions) continue;
-
-    const hasVinyl = versions.some(v => {
-      const formatStr = (v.format || "").toLowerCase();
-      const majorFormats = (v.major_formats || []).map(f => f.toLowerCase());
-      const isVinyl =
-        formatStr.includes("vinyl") || majorFormats.includes("vinyl");
-      const isPromo = (v.title || "").toLowerCase().includes("promo");
-      return isVinyl && !isPromo;
-    });
-
-    if (hasVinyl) return {
-      title: match.title,
-      cover: match.cover_image,
-      exists: true
-    };
+  if (!results.length) {
+    results =
+      (
+        await db.search({
+          ...searchParams,
+          query: `${artist} ${album}`,
+        })
+      ).data.results ?? [];
   }
 
-  return null;
+  if (!results.length) return notFound(artist, album);
+
+  const ranked = results
+    .map((r) => ({
+      result: r,
+      ...scoreMatch(artist, album, r.title),
+    }))
+    .filter((r) => r.passes)
+    .sort((a, b) => b.albumScore + b.artistScore - (a.albumScore + a.artistScore));
+
+  for (const { result } of ranked) {
+    const versionsRes = await db.getMasterVersions(result.id);
+    const versions = versionsRes.data.versions;
+    if (!versions?.length) continue;
+
+    if (versions.some(isVinylVersion)) {
+      return {
+        title: result.title,
+        cover: result.cover_image,
+        exists: true,
+      };
+    }
+  }
+
+  return notFound(artist, album);
 };

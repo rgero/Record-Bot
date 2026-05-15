@@ -26,6 +26,12 @@ export const ProcessHelp = async (message: Message) => {
             "`!play {artist OR album} {user}`: Adds a play for that album. If there is more than one result, it will give you the drop down.\n" +
             "The user mention is to include multiple listeners" 
         },
+        {
+          name: "Discogs Lookup",
+          value:
+            "`!exists --artist {name} --album {name}`: Checks Discogs for a vinyl pressing.\n" +
+            "`!exists {spotify link}`: Same check using artist/album from Spotify.",
+        },
         { 
           name: "Discovery & Stats", 
           value: 
