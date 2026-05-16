@@ -30,7 +30,17 @@ const isVinylVersion = (v: { format?: string; major_formats?: string[]; title?: 
   return isVinyl && !isPromo;
 };
 
-const scoreMatch = (artist: string, album: string, discogsTitle: string) => {
+/** Standalone releases (no master) expose formats on the release resource. */
+export const isVinylReleaseFormat = (
+  formats?: Array<{ name?: string; descriptions?: string[] }>
+) =>
+  (formats ?? []).some((f) => {
+    const name = (f.name ?? "").toLowerCase();
+    const descriptions = (f.descriptions ?? []).join(" ").toLowerCase();
+    return name.includes("vinyl") || descriptions.includes("vinyl");
+  });
+
+export const scoreMatch = (artist: string, album: string, discogsTitle: string) => {
   const targetArtist = normalize(artist);
   const targetAlbum = normalize(album);
   const discogsArtist = normalize(extractArtistFromTitle(discogsTitle));
@@ -53,6 +63,22 @@ const notFound = (artist: string, album: string): DiscogResponse => ({
   exists: false,
 });
 
+type SearchResult = {
+  id: number;
+  type: string;
+  title: string;
+  cover_image?: string;
+};
+
+const rankResults = (artist: string, album: string, results: SearchResult[]) =>
+  results
+    .map((result) => ({
+      result,
+      ...scoreMatch(artist, album, result.title),
+    }))
+    .filter((r) => r.passes)
+    .sort((a, b) => b.albumScore + b.artistScore - (a.albumScore + a.artistScore));
+
 export const CheckAlbumExistence = async (
   artist: string,
   album: string
@@ -72,38 +98,24 @@ export const CheckAlbumExistence = async (
   });
 
   const db = client.database();
-  const searchParams = { type: "master" as const, per_page: 25 };
+  const query = `${artist} ${album}`;
+  const masterSearchParams = { type: "master" as const, per_page: 50 };
 
-  let results =
+  let masterResults =
     (
       await db.search({
-        ...searchParams,
+        ...masterSearchParams,
         artist,
         release_title: album,
       })
     ).data.results ?? [];
 
-  if (!results.length) {
-    results =
-      (
-        await db.search({
-          ...searchParams,
-          query: `${artist} ${album}`,
-        })
-      ).data.results ?? [];
+  if (!masterResults.length) {
+    masterResults =
+      (await db.search({ ...masterSearchParams, query })).data.results ?? [];
   }
 
-  if (!results.length) return notFound(artist, album);
-
-  const ranked = results
-    .map((r) => ({
-      result: r,
-      ...scoreMatch(artist, album, r.title),
-    }))
-    .filter((r) => r.passes)
-    .sort((a, b) => b.albumScore + b.artistScore - (a.albumScore + a.artistScore));
-
-  for (const { result } of ranked) {
+  for (const { result } of rankResults(artist, album, masterResults)) {
     const versionsRes = await db.getMasterVersions(result.id);
     const versions = versionsRes.data.versions;
     if (!versions?.length) continue;
@@ -112,6 +124,28 @@ export const CheckAlbumExistence = async (
       return {
         title: result.title,
         cover: result.cover_image,
+        exists: true,
+      };
+    }
+  }
+
+  // Some pressings (e.g. bbno$ — bbno$) are orphan releases with no master_id.
+  const releaseResults =
+    (
+      await db.search({
+        per_page: 50,
+        query,
+      })
+    ).data.results?.filter((r) => r.type === "release") ?? [];
+
+  for (const { result } of rankResults(artist, album, releaseResults)) {
+    const releaseRes = await db.getRelease(result.id);
+    const title = releaseRes.data.title ?? result.title;
+    const isPromo = title.toLowerCase().includes("promo");
+    if (!isPromo && isVinylReleaseFormat(releaseRes.data.formats)) {
+      return {
+        title: result.title,
+        cover: result.cover_image ?? releaseRes.data.images?.[0]?.uri,
         exists: true,
       };
     }
