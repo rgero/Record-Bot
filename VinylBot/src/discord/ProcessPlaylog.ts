@@ -1,8 +1,10 @@
 import { EmbedBuilder, Message } from "discord.js";
+import { getPlayLogByID, getPlaylogByIndex } from "../services/plays.api.js";
+
 import { UUID } from "node:crypto";
 import { escapeColons } from "../utils/escapeColons.js";
-import { getPlayLogByID } from "../services/plays.api.js";
 import { getUserById } from "../services/users.api.js";
+import { parseCommand } from "../utils/parseCommand.js";
 
 interface PlaylogInfo {
   id: number;
@@ -30,11 +32,7 @@ const buildVinylEmbed = async (playlog: PlaylogInfo) => {
       (u, i) => u?.name ?? `Unknown (${playlog.listeners![i]})`
     );
 
-    listenersValue = names.join(", ");
-
-    if (listenersValue.length > 1024) {
-      listenersValue = listenersValue.slice(0, 1021) + "...";
-    }
+    listenersValue = limit(names.join(", "), 1024);
   }
 
   return new EmbedBuilder()
@@ -59,15 +57,26 @@ const buildVinylEmbed = async (playlog: PlaylogInfo) => {
 };
 
 export const ProcessPlaylog = async (message: Message) => {
-  const args = message.content.split(" ").slice(1);
+  const parsed = await parseCommand(message);
+  if (!parsed.ok) {
+    if (parsed.error) await message.reply(`❌ ${parsed.error}`);
+    return;
+  }
+  
+  const { flags, query } = parsed.context;
 
-  if (args.length === 0) {
-    return message.reply("Invalid query. Usage: `!playlog {id}`");
+  let id: number;
+  let useIndex = false;
+
+  if (flags.number && typeof flags.number === "string") {
+    id = parseInt(flags.number);
+    useIndex = true;
+  } else {
+    id = parseInt(query);
   }
 
-  const id = parseInt(args[0]);
   if (isNaN(id)) {
-    return message.reply("Invalid ID. It must be a number.");
+    return message.reply("❌ Invalid ID. It must be a number.");
   }
 
   const loadingMessage = await message.reply({
@@ -79,11 +88,13 @@ export const ProcessPlaylog = async (message: Message) => {
   });
 
   try {
-    const playlog = await getPlayLogByID(id);
+    const playlog = useIndex 
+      ? await getPlaylogByIndex(id) 
+      : await getPlayLogByID(id);
 
     if (!playlog) {
       return loadingMessage.edit({
-        content: `No matching records found for ID "${id}".`,
+        content: `❌ No matching records found for ID "${id}".`,
         embeds: [],
       });
     }
@@ -94,7 +105,7 @@ export const ProcessPlaylog = async (message: Message) => {
       album: playlog.album ?? "Unknown Album",
       imageUrl: playlog.imageUrl ?? "",
       date: playlog.date ? new Date(playlog.date) : null,
-      listeners: playlog.listeners as UUID[],
+      listeners: (playlog.listeners as UUID[]) || [],
     };
 
     const embed = await buildVinylEmbed(playlogInfo);
@@ -107,7 +118,7 @@ export const ProcessPlaylog = async (message: Message) => {
     console.error("Playlog API Error:", error);
 
     return loadingMessage.edit({
-      content: "There was an error fetching the playlog data. Please try again later.",
+      content: "⚠️ There was an error fetching the playlog data. Please try again later.",
       embeds: [],
     });
   }

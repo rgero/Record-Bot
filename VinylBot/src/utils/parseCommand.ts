@@ -3,7 +3,7 @@ import { UUID } from "node:crypto";
 import { getDropdownValue } from "./discordToDropdown.js";
 import { resolveUserMap } from "./resolveUserMap.js";
 
-const VALUE_FLAGS = ["sort", "limit", "tags"];
+const VALUE_FLAGS = ["sort", "limit", "tags", "number"];
 
 export interface CommandContext {
   mentions: UUID[];

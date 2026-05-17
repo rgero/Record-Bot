@@ -57,6 +57,31 @@ export const getPlayLogs = async (limit: number = 0): Promise<PlayLog[]> => {
 
 /// End of Utility Functions
 
+export const getPlaylogByIndex = async (index: number): Promise<PlayLog | null> => {
+  if (index < 1) return null;
+
+  const { data, error } = await supabase
+    .from("playlogs")
+    .select("*, vinyls(artist, album, imageUrl)")
+    .order("date", { ascending: true })
+    .range(index - 1, index - 1);
+
+  if (error) {
+    console.error("Error fetching playlog:", error);
+    return null;
+  }
+
+  const targetPlaylog = data?.[0];
+  if (!targetPlaylog) return null;
+
+  return {
+    ...targetPlaylog,
+    artist: targetPlaylog.vinyls?.artist,
+    album: targetPlaylog.vinyls?.album,
+    imageUrl: targetPlaylog.vinyls?.imageUrl
+  };
+};
+
 export const getPlayLogByID = async (id: number): Promise<PlayLog|null> => {
   const { data, error } = await supabase.from("playlogs").select("*, vinyls(artist, album, imageUrl)").eq("id", id).single();
 
