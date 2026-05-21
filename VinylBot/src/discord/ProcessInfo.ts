@@ -56,6 +56,10 @@ const buildVinylEmbed = async (vinyl: Vinyl) => {
         inline: true,
       },
       {
+        name: "Tags",
+        value: vinyl.tags && vinyl.tags.length > 0 ? vinyl.tags.map(tag => `\`${tag}\``).join(" ") :  "None",
+      },
+      {
         name: "Notes",
         value: limit(vinyl.notes, 1024),
       }
