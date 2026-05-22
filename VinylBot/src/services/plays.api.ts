@@ -1,7 +1,6 @@
 import { ItemCount } from "../interfaces/ItemCount.js";
 import { PlayLog } from "../interfaces/PlayLog.js";
 import { UUID } from "node:crypto";
-import { sanitizeForPostgrestIlikeOr } from "../utils/sanitizePostgrestIlike.js";
 import supabase from "./supabase.js";
 
 type PlayLogAlbumRow = {
@@ -155,11 +154,12 @@ export const getTopPlayedAlbumsByUserID = async (userID: string): Promise<ItemCo
 };
 
 export const getSortedPlaysByQuery = async (query: string): Promise<ItemCount[]> => {
-  const safe = sanitizeForPostgrestIlikeOr(query);
+  // Uses websearch full-text search syntax (.wfts) inside the foreignTable filter
+  // to natively ignore punctuation matching on artist/album strings
   const { data, error } = await supabase
     .from("playlogs")
     .select("album_id, vinyls!inner(artist, album)")
-    .or(`artist.ilike.%${safe}%,album.ilike.%${safe}%`, { foreignTable: "vinyls" });
+    .or(`artist.wfts.${query},album.wfts.${query}`, { foreignTable: "vinyls" });
 
   if (error) {
     console.error("Error fetching query plays:", error);
