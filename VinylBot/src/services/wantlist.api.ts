@@ -1,6 +1,5 @@
 import { AddStatus } from "../interfaces/AddStatus.js";
 import { WantedItem } from "../interfaces/WantedItem.js";
-import { sanitizeForPostgrestIlikeOr } from "../utils/sanitizePostgrestIlike.js";
 import supabase from "./supabase.js";
 
 export const getWantList = async (query: { type: string; term: string }): Promise<WantedItem[]> => {
@@ -9,8 +8,8 @@ export const getWantList = async (query: { type: string; term: string }): Promis
   if (query.type === 'user') {
     dbQuery = dbQuery.contains('searcher', [query.term]);
   } else if (query.type === 'search') {
-    const safe = sanitizeForPostgrestIlikeOr(query.term);
-    dbQuery = dbQuery.or(`artist.ilike.%${safe}%,album.ilike.%${safe}%`);
+    // Uses websearch full-text search syntax via PostgREST to automatically bypass punctuation parser errors
+    dbQuery = dbQuery.or(`artist.wfts.${query.term},album.wfts.${query.term}`);
   }
 
   const { data, error } = await dbQuery;
@@ -20,8 +19,6 @@ export const getWantList = async (query: { type: string; term: string }): Promis
 
 
 export const addWantedItem = async (newWantedItem: WantedItem): Promise<AddStatus> => {
-  // Wanted Items now has a unique constraint that the Artist + Album together must be unique.
-  // Apparently this will return an error code of 23505 if violated.
   const { error } = await supabase.from('wanted_items').insert([newWantedItem]);
 
   if (error) {

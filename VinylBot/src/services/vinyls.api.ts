@@ -29,8 +29,9 @@ export const getVinylsBySearchQuery = async (searchQuery: VinylSearchQuery): Pro
   }
 
   if (searchQuery.search) {
-    const safe = sanitizeForPostgrestIlikeOr(searchQuery.search);
-    dbQuery = dbQuery.or(`artist.ilike.%${safe}%,album.ilike.%${safe}%`);
+    // Postgres full-text search natively ignores punctuation, so "Sorry, Mom" matches "Sorry Mom".
+    // 'wfts' stands for Web Search Full-Text Search, which handles normal user phrases gracefully.
+    dbQuery = dbQuery.or(`artist.wfts.${searchQuery.search},album.wfts.${searchQuery.search}`);
   }
 
   if (searchQuery.tags && searchQuery.tags.length > 0) {
@@ -60,8 +61,7 @@ export const getVinylsByQuery = async (query: { type: string; term: string }): P
   if (query.type === 'user') {
     dbQuery = dbQuery.contains('owners', [query.term]);
   } else if (query.type === 'search') {
-    const safe = sanitizeForPostgrestIlikeOr(query.term);
-    dbQuery = dbQuery.or(`artist.ilike.%${safe}%,album.ilike.%${safe}%`);
+    dbQuery = dbQuery.or(`artist.wfts.${query.term},album.wfts.${query.term}`);
   }
 
   const { data, error } = await dbQuery;
@@ -70,18 +70,21 @@ export const getVinylsByQuery = async (query: { type: string; term: string }): P
 };
 
 export const getFullVinylsByQuery = async (term: string): Promise<Vinyl[]> => {
-  const safe = sanitizeForPostgrestIlikeOr(term);
-  const { data, error } = await supabase.from('vinyls').select(`*, purchaseLocation:locations (name)`).or(`artist.ilike.%${safe}%,album.ilike.%${safe}%`);
+  const { data, error } = await supabase
+    .from('vinyls')
+    .select(`*, purchaseLocation:locations (name)`)
+    .or(`artist.wfts.${term},album.wfts.${term}`);
+  
   if (error) throw error;
   return data ?? [];
 }
 
 export const getVinylID = async (artist: string, album: string): Promise<number | null> => {
+  // For exact matches ignoring punctuation, we use .or with wfts
   const { data, error } = await supabase
     .from("vinyls")
     .select("id")
-    .ilike("artist", artist)
-    .ilike("album", album)
+    .or(`artist.wfts.${artist},album.wfts.${album}`)
     .maybeSingle();
 
   if (error) throw error;
@@ -152,8 +155,7 @@ export const haveVinyl = async (query: {artist: string, album: string}): Promise
   const { data, error } = await supabase
     .from("vinyls")
     .select("id")
-    .ilike("artist", query.artist)
-    .ilike("album", query.album)
+    .or(`artist.wfts.${query.artist},album.wfts.${query.album}`)
     .maybeSingle();
   
   if (error) throw error;
@@ -170,14 +172,17 @@ export const getUnplayedVinyls = async (userID: string, query?: string, sort?: s
 
   let filteredData: Vinyl[] = data || [];
 
-  // Filter by search query
+  // Local Javascript Array fallback filtering
   if (query) {
-    const lowerQuery = query.toLowerCase();
+    const cleanQuery = query.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, '');
     filteredData = filteredData.filter((item: Vinyl) => {
+      const cleanArtist = item.artist.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, '');
+      const cleanAlbum = item.album.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, '');
+      
       return (
-        item.artist.toLowerCase().includes(lowerQuery) || 
-        item.album.toLowerCase().includes(lowerQuery) || 
-        item.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+        cleanArtist.includes(cleanQuery) || 
+        cleanAlbum.includes(cleanQuery) || 
+        item.tags?.some(tag => tag.toLowerCase().includes(cleanQuery))
       );
     });
   }
