@@ -3,7 +3,6 @@ import { ItemCount } from "../interfaces/ItemCount.js";
 import { UUID } from "node:crypto";
 import { Vinyl } from "../interfaces/Vinyl.js";
 import { VinylSearchQuery } from "../interfaces/VinylSearchQuery.js";
-import { sanitizeForPostgrestIlikeOr } from "../utils/sanitizePostgrestIlike.js";
 import { sortVinyls } from "../utils/sortVinyls.js";
 import supabase from "./supabase.js";
 
