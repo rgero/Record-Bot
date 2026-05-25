@@ -154,7 +154,8 @@ export const haveVinyl = async (query: {artist: string, album: string}): Promise
   const { data, error } = await supabase
     .from("vinyls")
     .select("id")
-    .or(`artist.wfts.${query.artist},album.wfts.${query.album}`)
+    .eq("artist", query.artist)
+    .eq("album", query.album)
     .maybeSingle();
   
   if (error) throw error;
