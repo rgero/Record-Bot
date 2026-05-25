@@ -48,7 +48,6 @@ export const ProcessWant = async (message: Message) => {
       .setTitle(isDuplicate ? `⚠️ Already Listed: ${escapeColons(albumName)}` : `✅ Added: ${escapeColons(albumName)}`)
       .setDescription(escapeColons(artists))
       .setColor(isDuplicate ? 0xf1c40f : 0x1db954)
-      .setThumbnail(albumArt)
       .setURL(`https://open.spotify.com/${parsed.type}/${parsed.id}`)
       .addFields(
         { name: "Release Date", value: releaseDate || "N/A", inline: true },
@@ -56,6 +55,10 @@ export const ProcessWant = async (message: Message) => {
         { name: "Requested By", value: mappedRequester, inline: true },
         { name: "Notes", value: notes || "None", inline: false }
       );
+
+    if (albumArt) {
+      embed.setThumbnail(albumArt);
+    }
 
     await message.reply({ embeds: [embed] });
 
