@@ -1,16 +1,16 @@
 import { getSortedPlaysByQuery, getTopPlayedAlbumsByUserID } from "../../services/plays.api.js";
 
-import { EmbeddedResponse } from "../../utils/discord/EmbeddedResponse.js";
-import { Message } from "discord.js";
 import { CommandContext } from "../../utils/parseCommand.js";
+import { EmbeddedResponse } from "../../utils/discord/EmbeddedResponse.js";
+import { ItemCount } from "../../interfaces/ItemCount.js";
+import { Message } from "discord.js";
 import { escapeColons } from "../../utils/escapeColons.js";
 import { getNameById } from "../../services/users.api.js";
 import { getVinylsByPlayCount } from "../../services/vinyls.api.js";
-import { ItemCount } from "../../interfaces/ItemCount.js";
 
 export const ProcessPlayCount = async (message: Message, context: CommandContext) => {
   try {
-    const { mentions, query } = context;
+    const { mentions, query, flags } = context;
 
     let list: ItemCount[] = [];
     let titleSuffix = "";
@@ -25,6 +25,11 @@ export const ProcessPlayCount = async (message: Message, context: CommandContext
     } else {
       list = await getVinylsByPlayCount();
       titleSuffix = "(All Time)";
+    }
+
+    if (flags["dir"] === "asc") {
+      list.reverse();
+      titleSuffix += " (Ascending)";
     }
 
     if (!list || list.length === 0) {
