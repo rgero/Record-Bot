@@ -119,4 +119,67 @@ describe('parseCommand', () => {
       error: 'The flag `--sort` requires an argument (e.g., `--sort value`).',
     });
   }); 
+
+it('should convert em-dashes (—) into standard flag double dashes (--)', async () => {
+    vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map());
+    // Using an em-dash for a value-based flag
+    const message = createMockMessage("!stats —count 10");
+    
+    const result = await parseCommand(message);
+    
+    expect(result).toEqual({
+      ok: true,
+      context: {
+        mentions: [],
+        flags: { count: '10' },
+        query: ""
+      }
+    });
+  });
+
+  it('should return an error when a value-flag argument is another flag', async () => {
+    vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map());
+    const message = createMockMessage("!stats --count --dir asc");
+    
+    const result = await parseCommand(message);
+    
+    expect(result).toEqual({
+      ok: false,
+      error: 'The flag `--count` requires an argument (e.g., `--count value`).',
+    });
+  });
+
+  it('should return an error when a value-flag argument is a discord mention', async () => {
+    vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map());
+    const message = createMockMessage("!stats --count <@123>");
+    
+    const result = await parseCommand(message);
+    
+    expect(result).toEqual({
+      ok: false,
+      error: 'The flag `--count` requires an argument (e.g., `--count value`).',
+    });
+  });
+
+  it('should safely filter out text-based Discord mention strings from the query even if unmapped to a user', async () => {
+    vi.mocked(userMapService.resolveUserMap).mockResolvedValue(new Map());
+    const message = createMockMessage("!stats <@!456789> Unknown Album");
+    
+    const result = await parseCommand(message);
+    
+    expect(result).toEqual({
+      ok: true,
+      context: {
+        mentions: [],
+        flags: {},
+        query: "Unknown Album"
+      }
+    });
+  });
+
+  it('should return ok: false if the raw message content contains no flags', async () => {
+    const message = createMockMessage("    ");
+    const result = await parseCommand(message);
+    expect(result).toEqual({ ok: false });
+  });
 });
