@@ -27,9 +27,18 @@ export const ProcessPlayCount = async (message: Message, context: CommandContext
       titleSuffix = "(All Time)";
     }
 
+    let needReverse = false;
     if (flags["dir"] === "asc") {
       list.reverse();
+      needReverse = true;
       titleSuffix += " (Ascending)";
+    }
+
+    if (flags["count"] !== undefined && !isNaN(Number(flags["count"]))) {
+      const targetCount = Number(flags["count"]);
+      list = list.filter((item) => 
+        needReverse ? item.count <= targetCount : item.count >= targetCount
+      );
     }
 
     if (!list || list.length === 0) {

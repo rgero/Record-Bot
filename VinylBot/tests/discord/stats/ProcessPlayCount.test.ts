@@ -87,4 +87,92 @@ describe('ProcessPlayCount', () => {
       expect.stringContaining('⚠️ No plays found matching "NonExistent"')
     );
   });
+
+it('should reverse the list and append ascending suffix when dir flag is asc', async () => {
+    const context: CommandContext = { 
+      ...emptyContext(), 
+      flags: { dir: 'asc' } 
+    };
+    
+    // Simulating pre-sorted high-to-low data from the database
+    vi.mocked(vinylsApi.getVinylsByPlayCount).mockResolvedValue([
+      { title: 'Album High', count: 100 },
+      { title: 'Album Low', count: 10 }
+    ]);
+
+    await ProcessPlayCount(mockMessage as Message, context);
+
+    expect(EmbeddedResponse).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Top Albums by Play Count (All Time) (Ascending)',
+      // Expect the list to have been reversed in place
+      list: [
+        { title: 'Album Low', count: 10 },
+        { title: 'Album High', count: 100 }
+      ]
+    }));
+  });
+
+  it('should filter out items with fewer plays than targetCount under descending order', async () => {
+    const context: CommandContext = { 
+      ...emptyContext(), 
+      flags: { count: '50' } 
+    };
+    
+    vi.mocked(vinylsApi.getVinylsByPlayCount).mockResolvedValue([
+      { title: 'Album High', count: 100 },
+      { title: 'Album Mid', count: 50 },
+      { title: 'Album Low', count: 10 }
+    ]);
+
+    await ProcessPlayCount(mockMessage as Message, context);
+
+    expect(EmbeddedResponse).toHaveBeenCalledWith(expect.objectContaining({
+      list: [
+        { title: 'Album High', count: 100 },
+        { title: 'Album Mid', count: 50 }
+      ]
+    }));
+  });
+
+  it('should filter out items with more plays than targetCount under ascending order', async () => {
+    const context: CommandContext = { 
+      ...emptyContext(), 
+      flags: { dir: 'asc', count: '50' } 
+    };
+    
+    // Database returns high-to-low, code reverses it, then applies <= filter
+    vi.mocked(vinylsApi.getVinylsByPlayCount).mockResolvedValue([
+      { title: 'Album High', count: 100 },
+      { title: 'Album Mid', count: 50 },
+      { title: 'Album Low', count: 10 }
+    ]);
+
+    await ProcessPlayCount(mockMessage as Message, context);
+
+    expect(EmbeddedResponse).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Top Albums by Play Count (All Time) (Ascending)',
+      list: [
+        { title: 'Album Low', count: 10 },
+        { title: 'Album Mid', count: 50 }
+      ]
+    }));
+  });
+
+  it('should handle non-numeric count flags gracefully by ignoring the filter', async () => {
+    const context: CommandContext = { 
+      ...emptyContext(), 
+      flags: { count: 'not-a-number' } 
+    };
+    
+    const originalList = [{ title: 'Album A', count: 10 }];
+    vi.mocked(vinylsApi.getVinylsByPlayCount).mockResolvedValue(originalList);
+
+    await ProcessPlayCount(mockMessage as Message, context);
+
+    expect(EmbeddedResponse).toHaveBeenCalledWith(expect.objectContaining({
+      list: originalList
+    }));
+  });
+
 });
+

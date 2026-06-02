@@ -118,5 +118,5 @@ describe('parseCommand', () => {
       ok: false,
       error: 'The flag `--sort` requires an argument (e.g., `--sort value`).',
     });
-  });
+  }); 
 });
