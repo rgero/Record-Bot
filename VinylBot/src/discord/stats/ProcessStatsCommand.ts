@@ -5,7 +5,7 @@ import { ProcessTopArtists } from "./ProcessTopArtists.js";
 import { ProcessTopLocation } from "./ProcessTopLocation.js";
 import { parseCommand } from "../../utils/parseCommand.js";
 
-export const ProcessTopCommand = async (message: Message) => {
+export const ProcessStatsCommand = async (message: Message) => {
   const parsed = await parseCommand(message);
   if (!parsed.ok) {
     if (parsed.error) await message.reply(`❌ ${parsed.error}`);
@@ -25,7 +25,9 @@ export const ProcessTopCommand = async (message: Message) => {
     const flag = activeFlags[0];
 
     switch (flag) {
-      case "artist":
+      case "albums":
+        return ProcessTop(message, context);
+      case "artists":
         return ProcessTopArtists(message, context);
       case "locations":
         return ProcessTopLocation(message, context);
@@ -36,5 +38,5 @@ export const ProcessTopCommand = async (message: Message) => {
         return;
     }
   }
-  return ProcessTop(message, context);
+  return ProcessPlayCount(message, context);
 };

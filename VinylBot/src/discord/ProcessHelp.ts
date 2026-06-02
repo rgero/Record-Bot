@@ -44,10 +44,12 @@ export const ProcessHelp = async (message: Message) => {
             "`!random --tags {tags}`: Chooses a random vinyl based on the specified tags.\n" +
             "`!random --unplayed`: Chooses a random vinyl from your unplayed list.\n" +
             "`!info {album name}`: Gives you some info about the album.\n" +
+            "`!stats {user|artist}`: Returns top albums by play count (household if no user specified).\n" +
+            "`!stats --albums`: Returns top albums by play count.\n" +
+            "`!stats --artists`: Returns top artists by play count.\n" +
+            "`!stats --plays {user|artist}`: Returns top albums by play count.\n" +
+            "`!stats --locations`: Returns the locations sorted by album count.\n" +
             "`!tag {array of tags}`: Gives you a list of albums with the specified tags.\n" +
-            "`!top {user}`: Returns top artists by album count (household if no user specified).\n" +
-            "`!top --plays {user|artist}`: Returns top albums by play count.\n" +
-            "`!top --locations`: Returns the locations sorted by album count.\n" +
             "`!unplayed`: Returns a list of unplayed albums in your collection."
         }
       )
