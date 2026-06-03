@@ -1,4 +1,4 @@
-import { sortVinyls, validSorts } from "../utils/sortVinyls.js";
+import { sortItems, validSorts } from "../utils/sortItems.js";
 
 import { BaseVinyl } from "../interfaces/BaseVinyl.js";
 import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse.js";
@@ -45,12 +45,12 @@ export const ProcessList = async (message: Message, listType: "want" | "tag") =>
     switch (listType) {
       case "tag": {
         const tagList = term.split(",");
-        list = sortVinyls(await getVinylsByTags(tagList), sort);
+        list = sortItems(await getVinylsByTags(tagList), sort);
         break;
       }
       default:
         listName = "Want List";
-        list = await getWantList({ type, term });
+        list = sortItems(await getWantList({ type, term }), sort);
     }
 
     const title = type === "full" ? `The ${listName}` : `${listName} matches for "${displayTerm}"`;

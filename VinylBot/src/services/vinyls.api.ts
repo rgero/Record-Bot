@@ -3,7 +3,7 @@ import { ItemCount } from "../interfaces/ItemCount.js";
 import { UUID } from "node:crypto";
 import { Vinyl } from "../interfaces/Vinyl.js";
 import { VinylSearchQuery } from "../interfaces/VinylSearchQuery.js";
-import { sortVinyls } from "../utils/sortVinyls.js";
+import { sortItems } from "../utils/sortItems.js";
 import supabase from "./supabase.js";
 
 /**
@@ -189,7 +189,7 @@ export const getUnplayedVinyls = async (userID: string, query?: string, sort?: s
 
   // Sort the data
   if (sort) {
-    filteredData = sortVinyls(filteredData, sort);
+    filteredData = sortItems(filteredData, sort) as Vinyl[];
   }
 
   return filteredData;

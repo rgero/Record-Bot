@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { Vinyl } from '../../src/interfaces/Vinyl';
-import { sortVinyls } from '../../src/utils/sortVinyls';
+import { sortItems } from '../../src/utils/sortItems';
 
 // Mock normalizeString to just return lowercase for simple testing
 vi.mock('../../src/utils/normalizeString', () => ({
   normalizeString: (s: string) => s.toLowerCase().trim(),
 }));
 
-describe('sortVinyls', () => {
+describe('sortItems', () => {
   const mockVinyls: Partial<Vinyl>[] = [
     { artist: 'Radiohead', album: 'Kid A', length: 47, playCount: 10 },
     { artist: 'Bon Iver', album: 'For Emma', length: 37, playCount: 50 },
@@ -19,19 +19,19 @@ describe('sortVinyls', () => {
 
   describe('String Sorting (Artist/Album)', () => {
     it('should sort by artist ascending (+)', () => {
-      const sorted = sortVinyls(vinyls, 'artist+');
+      const sorted = sortItems(vinyls, 'artist+');
       expect(sorted[0].artist).toBe('Bon Iver');
       expect(sorted[2].artist).toBe('Zaba');
     });
 
     it('should sort by artist descending (-)', () => {
-      const sorted = sortVinyls(vinyls, 'artist-');
+      const sorted = sortItems(vinyls, 'artist-');
       expect(sorted[0].artist).toBe('Zaba');
       expect(sorted[2].artist).toBe('Bon Iver');
     });
 
     it('should sort by album ascending (+)', () => {
-      const sorted = sortVinyls(vinyls, 'album+');
+      const sorted = sortItems(vinyls, 'album+');
       expect(sorted[0].album).toBe('For Emma');
       expect(sorted[2].album).toBe('Kid A');
     });
@@ -39,13 +39,13 @@ describe('sortVinyls', () => {
 
   describe('Numeric Sorting (Length/Plays)', () => {
     it('should sort by length ascending', () => {
-      const sorted = sortVinyls(vinyls, 'length+');
+      const sorted = sortItems(vinyls, 'length+');
       expect(sorted[0].length).toBe(37);
       expect(sorted[2].length).toBe(47);
     });
 
     it('should sort by playCount descending', () => {
-      const sorted = sortVinyls(vinyls, 'plays-');
+      const sorted = sortItems(vinyls, 'plays-');
       expect(sorted[0].playCount).toBe(50);
       expect(sorted[2].playCount).toBe(5);
     });
@@ -58,18 +58,18 @@ describe('sortVinyls', () => {
         { artist: 'B', album: 'B' }, // Missing playCount
       ] as Vinyl[];
 
-      const sorted = sortVinyls(incompleteVinyls, 'plays+');
+      const sorted = sortItems(incompleteVinyls, 'plays+');
       expect(sorted[0].artist).toBe('B'); // 0 comes before 10
     });
 
     it('should return original order if an invalid field is provided', () => {
-      const sorted = sortVinyls(vinyls, 'invalid+');
+      const sorted = sortItems(vinyls, 'invalid+');
       expect(sorted).toEqual(vinyls);
     });
 
     it('should not mutate the original array', () => {
       const original = [...vinyls];
-      sortVinyls(vinyls, 'artist+');
+      sortItems(vinyls, 'artist+');
       expect(vinyls).toEqual(original);
     });
   });

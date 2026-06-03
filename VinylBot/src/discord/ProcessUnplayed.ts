@@ -8,7 +8,7 @@ import { escapeColons } from "../utils/escapeColons.js";
 import { getDropdownValue } from "../utils/discordToDropdown.js";
 import { getNameById } from "../services/users.api.js";
 import { resolveUserMap } from "../utils/resolveUserMap.js";
-import { validSorts } from "../utils/sortVinyls.js";
+import { validSorts } from "../utils/sortItems.js";
 
 export const ProcessUnplayed = async (message: Message) => {
   const parsed = await parseCommand(message);
