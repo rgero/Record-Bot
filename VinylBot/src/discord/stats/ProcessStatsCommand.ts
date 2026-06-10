@@ -14,10 +14,13 @@ export const ProcessStatsCommand = async (message: Message) => {
   const context = parsed.context;
 
   const { flags } = context;
-  const activeFlags = Object.keys(flags).filter((key) => flags[key] === true);
+  const primaryFlags = ["albums", "artists", "locations", "plays"];
+  const activeFlags = Object.keys(flags).filter(
+    (key) => flags[key] === true && primaryFlags.includes(key)
+  );
 
   if (activeFlags.length > 1) {
-    await message.reply(`⚠️ Multiple flags detected (**${activeFlags.join(", ")}**). Please provide only one flag at a time.`);
+    await message.reply(`⚠️ Multiple flags detected (**${activeFlags.join(", ")}**). Please provide only one primary stats flag at a time.`);
     return;
   }
 
@@ -38,5 +41,6 @@ export const ProcessStatsCommand = async (message: Message) => {
         return;
     }
   }
+
   return ProcessPlayCount(message, context);
 };
