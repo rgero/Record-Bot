@@ -1,6 +1,7 @@
 import * as playsApi from "../../../src/services/plays.api.js";
 import * as vinylsApi from "../../../src/services/vinyls.api.js";
 import * as usersApi from "../../../src/services/users.api.js";
+import * as resolveUserMapModule from "../../../src/utils/resolveUserMap.js";
 
 import { beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
@@ -12,7 +13,11 @@ import { Message } from "discord.js";
 vi.mock("../../../src/services/plays.api.js");
 vi.mock("../../../src/services/vinyls.api.js");
 vi.mock("../../../src/services/users.api.js");
+vi.mock("../../../src/utils/resolveUserMap.js");
 vi.mock("../../../src/utils/discord/EmbeddedResponse.js");
+vi.mock("../../../src/utils/discordToDropdown.js", () => ({
+  getDropdownValue: (str: string) => str.toLowerCase(),
+}));
 vi.mock("../../../src/utils/escapeColons.js", () => ({
   escapeColons: (str: string) => str 
 }));
@@ -54,6 +59,39 @@ describe('ProcessPlayCount', () => {
     expect(vi.mocked(playsApi.getSortedPlaysByQuery)).toHaveBeenCalledWith('Radiohead');
     expect(EmbeddedResponse).toHaveBeenCalledWith(expect.objectContaining({
       title: 'Top Albums by Play Count matching "Radiohead"',
+    }));
+  });
+
+  it('should fetch top albums for the current user when --mine is present', async () => {
+    const context: CommandContext = { mentions: [], flags: { mine: true }, query: '' };
+    mockMessage.author = { username: 'John' };
+    vi.mocked(resolveUserMapModule.resolveUserMap).mockResolvedValue(new Map([['john', ['123']]]));
+    vi.mocked(playsApi.getTopPlayedAlbumsByUserID).mockResolvedValue([{ title: 'Album Mine', count: 8 }]);
+
+    await ProcessPlayCount(mockMessage as Message, context);
+
+    expect(resolveUserMapModule.resolveUserMap).toHaveBeenCalled();
+    expect(vi.mocked(playsApi.getTopPlayedAlbumsByUserID)).toHaveBeenCalledWith('123');
+    expect(EmbeddedResponse).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Top Albums by Play Count for your plays',
+    }));
+  });
+
+  it('should refine mine results using the query', async () => {
+    const context: CommandContext = { mentions: [], flags: { mine: true }, query: 'Lindsey Stirling' };
+    mockMessage.author = { username: 'John' };
+    vi.mocked(resolveUserMapModule.resolveUserMap).mockResolvedValue(new Map([['john', ['123']]]));
+    vi.mocked(playsApi.getTopPlayedAlbumsByUserID).mockResolvedValue([
+      { title: 'Lindsey Stirling - Album A', count: 5 },
+      { title: 'Other Artist - Album B', count: 2 },
+    ]);
+
+    await ProcessPlayCount(mockMessage as Message, context);
+
+    expect(vi.mocked(playsApi.getTopPlayedAlbumsByUserID)).toHaveBeenCalledWith('123');
+    expect(EmbeddedResponse).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Top Albums by Play Count for your plays matching "Lindsey Stirling"',
+      list: [{ title: 'Lindsey Stirling - Album A', count: 5 }],
     }));
   });
 
