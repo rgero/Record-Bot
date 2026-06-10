@@ -1,4 +1,4 @@
-import { sortVinyls, validSorts } from "../utils/sortVinyls.js";
+import { sortItems, validSorts } from "../utils/sortItems.js";
 
 import { EmbeddedResponse } from "../utils/discord/EmbeddedResponse.js";
 import { Message } from "discord.js";
@@ -29,7 +29,7 @@ export const ProcessHave = async (message: Message) => {
       }
     }
 
-    const list = sortVinyls(await getVinylsBySearchQuery(searchQuery), sort);
+    const list = sortItems(await getVinylsBySearchQuery(searchQuery), sort);
     const title = `The Have List - ${list.length} vinyl(s) found`;
 
     return await EmbeddedResponse({

@@ -1,18 +1,20 @@
 import { Vinyl } from "../interfaces/Vinyl.js";
+import { WantedItem } from "../interfaces/WantedItem.js";
 import { normalizeString } from "./normalizeString.js";
 
 export const validSorts = ["artist+", "artist-", "album+", "album-", "length+", "length-", "plays+", "plays-"];
 
+type SortItem = Vinyl | WantedItem;
 
 /**
  * Helpers 
 */
-export const sortVinyls = (vinyls: Vinyl[], sortBy: string): Vinyl[] => {
+export const sortItems = (vinyls: SortItem[], sortBy: string): SortItem[] => {
   const sortedData = [...vinyls];
   const direction = sortBy.endsWith('-') ? '-' : '+';
   const field = sortBy.slice(0, -1); // Removes the last character (+ or -)
 
-  sortedData.sort((a: Vinyl, b: Vinyl) => {
+  sortedData.sort((a: SortItem, b: SortItem) => {
     let compareA: any = '';
     let compareB: any = '';
 
@@ -26,12 +28,12 @@ export const sortVinyls = (vinyls: Vinyl[], sortBy: string): Vinyl[] => {
         compareB = normalizeString(b.album);
         break;
       case 'length':
-        compareA = a.length ?? 0;
-        compareB = b.length ?? 0;
+        compareA = 'length' in a ? (a.length ?? 0) : 0;
+        compareB = 'length' in b ? (b.length ?? 0) : 0;
         break;
       case 'plays':
-        compareA = a.playCount ?? 0;
-        compareB = b.playCount ?? 0;
+        compareA = 'playCount' in a ? (a.playCount ?? 0) : 0;
+        compareB = 'playCount' in b ? (b.playCount ?? 0) : 0  ;
         break;
       default:
         return 0;
