@@ -1,5 +1,6 @@
 import * as locationsApi from "../../../src/services/locations.api.js";
 import * as usersApi from "../../../src/services/users.api.js";
+import * as resolveUserMapModule from "../../../src/utils/resolveUserMap.js";
 
 import { beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
@@ -10,7 +11,11 @@ import { Message } from "discord.js";
 
 vi.mock("../../../src/services/locations.api.js");
 vi.mock("../../../src/services/users.api.js");
+vi.mock("../../../src/utils/resolveUserMap.js");
 vi.mock("../../../src/utils/discord/EmbeddedResponse.js");
+vi.mock("../../../src/utils/discordToDropdown.js", () => ({
+  getDropdownValue: (str: string) => str.toLowerCase(),
+}));
 vi.mock("../../../src/utils/escapeColons.js", () => ({
   escapeColons: (str: string) => str 
 }));
@@ -51,6 +56,24 @@ describe('ProcessTopLocation', () => {
     await ProcessTopLocation(mockMessage as Message, context);
 
     expect(locationsApi.getLocationsByPurchaseCountForID).toHaveBeenCalledWith(userId);
+    expect(EmbeddedResponse).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Top Locations by Album Count for Alice',
+    }));
+  });
+
+  it('should fetch and display user-specific locations when --mine is present', async () => {
+    const context: CommandContext = { mentions: [], flags: { mine: true }, query: '' };
+    mockMessage.author = { username: 'alice' };
+    vi.mocked(resolveUserMapModule.resolveUserMap).mockResolvedValue(new Map([['alice', ['user_99']]]));
+    vi.mocked(usersApi.getNameById).mockResolvedValue('Alice');
+    vi.mocked(locationsApi.getLocationsByPurchaseCountForID).mockResolvedValue([
+      { title: 'Local Shop', count: 2 }
+    ]);
+
+    await ProcessTopLocation(mockMessage as Message, context);
+
+    expect(resolveUserMapModule.resolveUserMap).toHaveBeenCalled();
+    expect(locationsApi.getLocationsByPurchaseCountForID).toHaveBeenCalledWith('user_99');
     expect(EmbeddedResponse).toHaveBeenCalledWith(expect.objectContaining({
       title: 'Top Locations by Album Count for Alice',
     }));

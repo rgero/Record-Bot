@@ -6,16 +6,47 @@ import { Message } from "discord.js";
 import { CommandContext } from "../../utils/parseCommand.js";
 import { escapeColons } from "../../utils/escapeColons.js";
 import { getNameById } from "../../services/users.api.js";
+import { getDropdownValue } from "../../utils/discordToDropdown.js";
+import { resolveUserMap } from "../../utils/resolveUserMap.js";
 
 export const ProcessTopLocation = async (message: Message, context: CommandContext) => {
   try {
-    const { mentions } = context;
+    const { mentions, flags } = context;
+
+    if (mentions.length > 1) {
+      await message.reply("❌ Invalid usage. Please mention only one user.");
+      return;
+    }
+
+    if (flags.mine && mentions.length === 1) {
+      await message.reply("❌ Invalid usage. Use either --mine or mention a user, not both.");
+      return;
+    }
 
     let list: ItemCount[] = [];
     let titleSuffix = "";
 
-    if (mentions.length === 1) {
-      const [userName, userList] = await Promise.all([getNameById(mentions[0]), getLocationsByPurchaseCountForID(mentions[0])]);
+    if (flags.mine) {
+      const userMap = await resolveUserMap();
+      const requesterName = getDropdownValue(message.author.username).toLowerCase();
+      const requesterIds = userMap.get(requesterName);
+
+      if (!requesterIds?.length) {
+        await message.reply("⚠️ You are not registered or your Discord username could not be mapped to a user.");
+        return;
+      }
+
+      const [userName, userList] = await Promise.all([
+        getNameById(requesterIds[0]),
+        getLocationsByPurchaseCountForID(requesterIds[0]),
+      ]);
+      list = userList;
+      titleSuffix = `for ${userName}`;
+    } else if (mentions.length === 1) {
+      const [userName, userList] = await Promise.all([
+        getNameById(mentions[0]),
+        getLocationsByPurchaseCountForID(mentions[0]),
+      ]);
       list = userList;
       titleSuffix = `for ${userName}`;
     } else {
