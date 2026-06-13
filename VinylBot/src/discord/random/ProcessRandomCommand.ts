@@ -1,6 +1,8 @@
 import { Message } from "discord.js";
 import { ProcessRandomAlbum } from "./ProcessRandomAlbum.js";
+import { ProcessRandomLowAlbum } from "./ProcessRandomLowAlbum.js";
 import { ProcessRandomStore } from "./ProcessRandomStore.js";
+import { ProcessRandomUnplayedAlbum } from "./ProcessRandomUnplayedAlbum.js";
 import { parseCommand } from "../../utils/parseCommand.js";
 
 export const ProcessRandomCommand = async (message: Message) => {
@@ -12,23 +14,30 @@ export const ProcessRandomCommand = async (message: Message) => {
   const context = parsed.context;
 
   const { flags } = context;
-  const activeFlags = Object.keys(flags).filter((key) => flags[key] === true);
+  const primaryFlags = ["low", "store", "unplayed"];
+  const activePrimaryFlags = Object.keys(flags).filter(
+    (key) => primaryFlags.includes(key) && Boolean(flags[key])
+  );
 
-  if (activeFlags.length > 1) {
-    await message.reply(`⚠️ Multiple flags detected (**${activeFlags.join(", ")}**). Please provide only one flag.`);
+  if (activePrimaryFlags.length > 1) {
+    await message.reply(
+      `⚠️ Multiple primary flags detected (**${activePrimaryFlags.join(", ")}**). Please provide only one primary flag.`
+    );
     return;
   }
 
-  if (activeFlags.length === 1) {
-    const flag = activeFlags[0];
+  if (activePrimaryFlags.length === 1) {
+    const flag = activePrimaryFlags[0];
 
     switch (flag) {
+      case "low":
+        return await ProcessRandomLowAlbum(message, context);
       case "store":
         return await ProcessRandomStore(message);
       case "unplayed":
-        return await ProcessRandomAlbum(message, context);
+        return await ProcessRandomUnplayedAlbum(message, context);
       default:
-        await message.reply(`⚠️ Unknown flag: --${flag}. Valid flags are --store, --tags, --unplayed.`);
+        await message.reply(`⚠️ Unknown primary flag: --${flag}. Valid primary flags are --store, --unplayed, --low.`);
         return;
     }
   }

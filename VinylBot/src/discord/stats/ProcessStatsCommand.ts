@@ -1,4 +1,5 @@
 import { Message } from "discord.js";
+import { ProcessLowPlays } from "./ProcessLowPlays.js";
 import { ProcessPlayCount } from "./ProcessPlayCount.js";
 import { ProcessTop } from "./ProcessTop.js";
 import { ProcessTopArtists } from "./ProcessTopArtists.js";
@@ -14,7 +15,7 @@ export const ProcessStatsCommand = async (message: Message) => {
   const context = parsed.context;
 
   const { flags } = context;
-  const primaryFlags = ["albums", "artists", "locations", "plays"];
+  const primaryFlags = ["albums", "artists", "locations", "plays", "low"];
   const activeFlags = Object.keys(flags).filter(
     (key) => flags[key] === true && primaryFlags.includes(key)
   );
@@ -36,6 +37,8 @@ export const ProcessStatsCommand = async (message: Message) => {
         return ProcessTopLocation(message, context);
       case "plays":
         return ProcessPlayCount(message, context);
+      case "low":
+        return ProcessLowPlays(message, context);
       default:
         await message.reply(`⚠️ The flag --**${flag}** is not supported for this command.`);
         return;
