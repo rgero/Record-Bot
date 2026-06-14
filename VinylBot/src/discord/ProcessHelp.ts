@@ -52,6 +52,7 @@ export const ProcessHelp = async (message: Message) => {
             "`!random`: Chooses a random vinyl.\n" +
             "`!random {person}`: Chooses a random vinyl liked by that person.\n" +
             "`!random {term}`: Chooses a random vinyl based on that term.\n" +
+            "`!random --low`: Chooses a random low-play vinyl; includes unplayed albums but uses the lowest positive play count to define the low-play pool.\n" +
             "`!random --store`: Chooses a random store.\n" +
             "`!random --tags {tags}`: Chooses a random vinyl based on tags.\n" +
             "`!random --unplayed`: Chooses a random vinyl from your unplayed list.\n" +
@@ -66,6 +67,7 @@ export const ProcessHelp = async (message: Message) => {
             "`!stats --albums` / `--artists`: Returns top albums or artists.\n" +
             "`!stats --plays {user|artist}`: Returns top albums by play count.\n" +
             "`!stats --locations`: Returns locations sorted by album count.\n" +
+            "`!stats --low`: Returns lowest-played albums.\n" +
             "`!tag {array of tags}`: Lists albums with specified tags.\n" +
             "`!unplayed`: Returns a list of unplayed albums in your collection."
         }
