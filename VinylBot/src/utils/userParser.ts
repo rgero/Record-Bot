@@ -1,13 +1,22 @@
 import fs from "fs";
 import path from "path";
 
+type MappingEntry =
+  | string
+  | {
+      displayName?: string;
+      discordId?: string;
+      usernames?: string[];
+    };
+
 export const isInList = (user:string): boolean => {
   try {
-    let mapping = {};
     const data = fs.readFileSync(path.resolve("./discordMapping.json"), "utf8");
-    mapping = JSON.parse(data);
+    const mapping = JSON.parse(data) as Record<string, MappingEntry>;
 
-    const values = Object.values(mapping);
+    const values = Object.values(mapping).map((entry) =>
+      typeof entry === "string" ? entry : entry.displayName
+    );
     return values.includes(user);
 
   } catch (err) {

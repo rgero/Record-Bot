@@ -31,7 +31,7 @@ export const ProcessPlayCount = async (message: Message, context: CommandContext
 
     if (isMine) {
       const userMap = await resolveUserMap();
-      const requesterName = getDropdownValue(message.author.username).toLowerCase();
+      const requesterName = getDropdownValue(message.author.username, message.author.id, message.author.globalName).toLowerCase();
       const requesterIds = userMap.get(requesterName);
 
       if (!requesterIds?.length) {

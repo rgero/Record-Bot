@@ -28,6 +28,38 @@ describe("getDropdownValue", () => {
     expect(getDropdownValue("SomeoneElse")).toBe("Unknown");
   });
 
+  it("should return displayName when mapping entry is object-based", async () => {
+    const mockMapping = {
+      geminni: {
+        displayName: "Anna",
+        discordId: "123456",
+      },
+    };
+    vi.spyOn(fs, 'readFileSync').mockReturnValue(JSON.stringify(mockMapping));
+
+    const { getDropdownValue } = await import("../../src/utils/discordToDropdown.js");
+
+    expect(getDropdownValue("geminni")).toBe("Anna");
+  });
+
+  it("should prioritize discordId over username lookup", async () => {
+    const mockMapping = {
+      roymond: {
+        displayName: "Roy",
+        discordId: "111",
+      },
+      geminni: {
+        displayName: "Anna",
+        discordId: "222",
+      },
+    };
+    vi.spyOn(fs, 'readFileSync').mockReturnValue(JSON.stringify(mockMapping));
+
+    const { getDropdownValue } = await import("../../src/utils/discordToDropdown.js");
+
+    expect(getDropdownValue("roymond", "222", null)).toBe("Anna");
+  });
+
   it("should return 'Unknown' and log error if the file fails to load", async () => {
     // Simulate file not found or permission error
     vi.spyOn(fs, 'readFileSync').mockImplementation(() => {

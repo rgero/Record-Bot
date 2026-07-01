@@ -82,7 +82,7 @@ export const ProcessCheckExists = async (message: Message) => {
         await interaction.deferUpdate();
 
         try {
-          const userRecord = await getUserByName(getDropdownValue(message.author.username));
+          const userRecord = await getUserByName(getDropdownValue(message.author.username, message.author.id, message.author.globalName));
 
           if (!userRecord) {
             return interaction.followUp({ content: "⚠️ User not found in system.", ephemeral: true });

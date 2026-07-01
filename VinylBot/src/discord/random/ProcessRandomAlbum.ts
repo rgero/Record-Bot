@@ -24,7 +24,7 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
       return;
     }
 
-    targetUser = await getUserByName(getDropdownValue(message.author.username));
+    targetUser = await getUserByName(getDropdownValue(message.author.username, message.author.id, message.author.globalName));
     if (flags.tags) {
       vinyls = await getVinylsByTags(flags.tags.toString().split(','))
       titleSuffix = "by Tags"
@@ -36,10 +36,10 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
       }
     } else if (query) {
       vinyls = await getVinylsByQuery({ type: "search", term: query });
-      targetUser = await getUserByName(getDropdownValue(message.author.username));
+      targetUser = await getUserByName(getDropdownValue(message.author.username, message.author.id, message.author.globalName));
     } else {
       vinyls = await getVinyls();
-      targetUser = await getUserByName(getDropdownValue(message.author.username));
+      targetUser = await getUserByName(getDropdownValue(message.author.username, message.author.id, message.author.globalName));
     }
 
     if (!targetUser) {

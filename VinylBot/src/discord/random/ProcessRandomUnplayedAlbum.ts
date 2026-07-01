@@ -19,7 +19,7 @@ export const ProcessRandomUnplayedAlbum = async (message: Message, context: Comm
       return;
     }
 
-    const currentUserName = getDropdownValue(message.author.username);
+    const currentUserName = getDropdownValue(message.author.username, message.author.id, message.author.globalName);
     const targetUser: User | null = await getUserByName(currentUserName);
 
     if (!targetUser) {

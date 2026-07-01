@@ -18,7 +18,7 @@ export const ProcessRandomLowAlbum = async (message: Message, context: CommandCo
       return;
     }
 
-    const currentUserName = getDropdownValue(message.author.username);
+    const currentUserName = getDropdownValue(message.author.username, message.author.id, message.author.globalName);
     let targetUser: User | null = await getUserByName(currentUserName);
     let vinyls: Vinyl[] = [];
     let titleSuffix = "";

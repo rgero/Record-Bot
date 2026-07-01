@@ -1,17 +1,54 @@
 import fs from "fs";
 import path from "path";
 
-let mappingCache: Record<string, string> | null = null;
+type MappingEntry =
+  | string
+  | {
+      displayName?: string;
+      discordId?: string;
+      usernames?: string[];
+    };
 
-export const getDropdownValue = (user: string) => {
+let mappingCache: Record<string, MappingEntry> | null = null;
+
+const normalizeHandle = (value: string | null | undefined): string =>
+  (value ?? "").trim().replace(/^@/, "").replace(/^\./, "").toLowerCase();
+
+const getDisplayName = (entry: MappingEntry): string =>
+  typeof entry === "string" ? entry : (entry.displayName || "Unknown");
+
+export const getDropdownValue = (user: string, discordId?: string, globalName?: string | null) => {
   if (mappingCache === null) {
     try {
       const data = fs.readFileSync(path.resolve("./discordMapping.json"), "utf8");
-      mappingCache = JSON.parse(data) as Record<string, string>;
+      mappingCache = JSON.parse(data) as Record<string, MappingEntry>;
     } catch (err) {
       console.error("Failed to load discordMapping.json", err);
       mappingCache = {};
     }
   }
-  return mappingCache[user] || "Unknown";
+
+  if (discordId) {
+    for (const entry of Object.values(mappingCache)) {
+      if (typeof entry !== "string" && entry.discordId === discordId) {
+        return getDisplayName(entry);
+      }
+    }
+  }
+
+  const requestedNames = [normalizeHandle(user), normalizeHandle(globalName)].filter(Boolean);
+
+  for (const [mappedUsername, entry] of Object.entries(mappingCache)) {
+    const aliases = [mappedUsername];
+    if (typeof entry !== "string" && entry.usernames?.length) {
+      aliases.push(...entry.usernames);
+    }
+
+    const normalizedAliases = aliases.map(normalizeHandle).filter(Boolean);
+    if (requestedNames.some((name) => normalizedAliases.includes(name))) {
+      return getDisplayName(entry);
+    }
+  }
+
+  return "Unknown";
 };

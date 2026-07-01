@@ -21,7 +21,7 @@ export const ProcessUnplayed = async (message: Message) => {
   const { mentions, query, flags } = context;
   const userMap = await resolveUserMap();
 
-  const requesterName = getDropdownValue(message.author.username).toLowerCase();
+  const requesterName = getDropdownValue(message.author.username, message.author.id, message.author.globalName).toLowerCase();
   const requesterIds = userMap.get(requesterName) as UUID[] | undefined;
 
   const targetIDs: UUID[] = mentions && mentions.length > 0 ? (mentions as UUID[]) : requesterIds || [];
