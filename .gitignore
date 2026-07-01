@@ -2,3 +2,4 @@ VinylBot/node_modules/
 *.env
 VinylBot/service-account.json
 VinylBot/discordMapping.json
+VinylBot/coverage/
