@@ -21,7 +21,7 @@ export const ProcessWant = async (message: Message) => {
     await message.suppressEmbeds(true);
     const [spotifyData, userID] = await Promise.all([
       getSpotifyData(parsed),
-      getUserByName(getDropdownValue(message.author?.username || "Unknown", message.author.id, message.author.globalName))
+      getUserByName(getDropdownValue(message.author?.username || "Unknown", message.author.id))
     ]);
 
     if (!userID) {
@@ -42,7 +42,7 @@ export const ProcessWant = async (message: Message) => {
     }
     const isDuplicate = status === "DUPLICATE";
     
-    const mappedRequester = getDropdownValue(message.author?.username, message.author.id, message.author.globalName);
+    const mappedRequester = getDropdownValue(message.author?.username || "", message.author.id);
 
     const embed = new EmbedBuilder()
       .setTitle(isDuplicate ? `⚠️ Already Listed: ${escapeColons(albumName)}` : `✅ Added: ${escapeColons(albumName)}`)

@@ -22,7 +22,7 @@ export const ProcessPlay = async (message: Message) => {
   const userMap = await resolveUserMap();
   
   // 1. Identify requester
-  const requesterName = getDropdownValue(message.author.username, message.author.id, message.author.globalName).toLowerCase();
+  const requesterName = getDropdownValue(message.author.username, message.author.id).toLowerCase();
   const requesterIds = userMap.get(requesterName);
 
   if (!requesterIds) {
@@ -35,7 +35,7 @@ export const ProcessPlay = async (message: Message) => {
   const mentions = message.mentions.users.filter(u => !u.bot);
 
   for (const [_, mention] of mentions) {
-    const name = getDropdownValue(mention.username, mention.id, mention.globalName).toLowerCase();
+    const name = getDropdownValue(mention.username, mention.id).toLowerCase();
     const dbIds = userMap.get(name);
     if (dbIds) {
       dbIds.forEach(id => listenerSet.add(id));

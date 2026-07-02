@@ -1,21 +1,18 @@
 import fs from "fs";
 import path from "path";
 
-type MappingEntry =
-  | string
-  | {
-      displayName?: string;
-      discordId?: string;
-      usernames?: string[];
-    };
+type MappingEntry = {
+  displayName?: string;
+  discordId?: string;
+  usernames?: string[];
+};
 
 let mappingCache: Record<string, MappingEntry> | null = null;
 
 const normalizeHandle = (value: string | null | undefined): string =>
   (value ?? "").trim().replace(/^@/, "").replace(/^\./, "").toLowerCase();
 
-const getDisplayName = (entry: MappingEntry): string =>
-  typeof entry === "string" ? entry : (entry.displayName || "Unknown");
+const getDisplayName = (entry: MappingEntry): string => entry.displayName || "Unknown";
 
 export const getDropdownValue = (user: string, discordId?: string, globalName?: string | null) => {
   if (mappingCache === null) {
@@ -30,7 +27,7 @@ export const getDropdownValue = (user: string, discordId?: string, globalName?: 
 
   if (discordId) {
     for (const entry of Object.values(mappingCache)) {
-      if (typeof entry !== "string" && entry.discordId === discordId) {
+      if (entry.discordId === discordId) {
         return getDisplayName(entry);
       }
     }
@@ -39,12 +36,9 @@ export const getDropdownValue = (user: string, discordId?: string, globalName?: 
   const requestedNames = [normalizeHandle(user), normalizeHandle(globalName)].filter(Boolean);
 
   for (const [mappedUsername, entry] of Object.entries(mappingCache)) {
-    const aliases = [mappedUsername];
-    if (typeof entry !== "string" && entry.usernames?.length) {
-      aliases.push(...entry.usernames);
-    }
-
+    const aliases = [mappedUsername, ...(entry.usernames ?? [])];
     const normalizedAliases = aliases.map(normalizeHandle).filter(Boolean);
+
     if (requestedNames.some((name) => normalizedAliases.includes(name))) {
       return getDisplayName(entry);
     }

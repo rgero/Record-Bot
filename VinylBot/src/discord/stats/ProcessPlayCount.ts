@@ -5,9 +5,9 @@ import { EmbeddedResponse } from "../../utils/discord/EmbeddedResponse.js";
 import { ItemCount } from "../../interfaces/ItemCount.js";
 import { Message } from "discord.js";
 import { escapeColons } from "../../utils/escapeColons.js";
+import { getDropdownValue } from "../../utils/discordToDropdown.js";
 import { getNameById } from "../../services/users.api.js";
 import { getVinylsByPlayCount } from "../../services/vinyls.api.js";
-import { getDropdownValue } from "../../utils/discordToDropdown.js";
 import { resolveUserMap } from "../../utils/resolveUserMap.js";
 
 export const ProcessPlayCount = async (message: Message, context: CommandContext) => {
@@ -31,7 +31,7 @@ export const ProcessPlayCount = async (message: Message, context: CommandContext
 
     if (isMine) {
       const userMap = await resolveUserMap();
-      const requesterName = getDropdownValue(message.author.username, message.author.id, message.author.globalName).toLowerCase();
+      const requesterName = getDropdownValue(message.author.username, message.author.id).toLowerCase();
       const requesterIds = userMap.get(requesterName);
 
       if (!requesterIds?.length) {

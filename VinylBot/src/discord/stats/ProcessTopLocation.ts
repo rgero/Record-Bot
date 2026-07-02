@@ -1,12 +1,12 @@
 import { getLocationsByPurchaseCount, getLocationsByPurchaseCountForID } from "../../services/locations.api.js";
 
+import { CommandContext } from "../../utils/parseCommand.js";
 import { EmbeddedResponse } from "../../utils/discord/EmbeddedResponse.js";
 import { ItemCount } from "../../interfaces/ItemCount.js";
 import { Message } from "discord.js";
-import { CommandContext } from "../../utils/parseCommand.js";
 import { escapeColons } from "../../utils/escapeColons.js";
-import { getNameById } from "../../services/users.api.js";
 import { getDropdownValue } from "../../utils/discordToDropdown.js";
+import { getNameById } from "../../services/users.api.js";
 import { resolveUserMap } from "../../utils/resolveUserMap.js";
 
 export const ProcessTopLocation = async (message: Message, context: CommandContext) => {
@@ -28,7 +28,7 @@ export const ProcessTopLocation = async (message: Message, context: CommandConte
 
     if (flags.mine) {
       const userMap = await resolveUserMap();
-      const requesterName = getDropdownValue(message.author.username, message.author.id, message.author.globalName).toLowerCase();
+      const requesterName = getDropdownValue(message.author.username, message.author.id).toLowerCase();
       const requesterIds = userMap.get(requesterName);
 
       if (!requesterIds?.length) {

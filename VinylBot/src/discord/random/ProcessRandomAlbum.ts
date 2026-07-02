@@ -1,4 +1,5 @@
 import { ComponentType, Message } from "discord.js";
+import { attachRandomAlbumCollector, buildAlbumEmbed, buildAlbumRow, getRandomItem } from "./utils/randomAlbumUtils.js";
 import { getUserById, getUserByName } from "../../services/users.api.js";
 import { getVinyls, getVinylsByQuery, getVinylsByTags, getVinylsLikedByUserID } from "../../services/vinyls.api.js";
 
@@ -8,7 +9,6 @@ import { User } from "../../interfaces/User.js";
 import { Vinyl } from "../../interfaces/Vinyl.js";
 import { addPlayLog } from "../../services/plays.api.js";
 import { getDropdownValue } from "../../utils/discordToDropdown.js";
-import { buildAlbumEmbed, buildAlbumRow, getRandomItem, attachRandomAlbumCollector } from "./utils/randomAlbumUtils.js";
 
 export const ProcessRandomAlbum = async (message: Message, context: CommandContext) => {
   try {
@@ -24,7 +24,7 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
       return;
     }
 
-    targetUser = await getUserByName(getDropdownValue(message.author.username, message.author.id, message.author.globalName));
+    targetUser = await getUserByName(getDropdownValue(message.author.username, message.author.id));
     if (flags.tags) {
       vinyls = await getVinylsByTags(flags.tags.toString().split(','))
       titleSuffix = "by Tags"
@@ -36,10 +36,10 @@ export const ProcessRandomAlbum = async (message: Message, context: CommandConte
       }
     } else if (query) {
       vinyls = await getVinylsByQuery({ type: "search", term: query });
-      targetUser = await getUserByName(getDropdownValue(message.author.username, message.author.id, message.author.globalName));
+      targetUser = await getUserByName(getDropdownValue(message.author.username, message.author.id));
     } else {
       vinyls = await getVinyls();
-      targetUser = await getUserByName(getDropdownValue(message.author.username, message.author.id, message.author.globalName));
+      targetUser = await getUserByName(getDropdownValue(message.author.username, message.author.id));
     }
 
     if (!targetUser) {

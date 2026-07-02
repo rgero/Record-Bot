@@ -28,7 +28,7 @@ export const parseCommand = async (message: Message): Promise<ParseCommandResult
   const discordMentions = message.mentions.users.filter(u => !u.bot);
   
   for (const mention of discordMentions.values()) {
-    const name = getDropdownValue(mention.username, mention.id, mention.globalName).toLowerCase();
+    const name = getDropdownValue(mention.username, mention.id).toLowerCase();
     const dbIds = userMap.get(name);
     if (dbIds?.[0]) {
       returnValue.mentions.push(dbIds[0] as UUID);

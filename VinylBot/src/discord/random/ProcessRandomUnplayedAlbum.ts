@@ -1,4 +1,5 @@
 import { ComponentType, Message } from "discord.js";
+import { attachRandomAlbumCollector, buildAlbumEmbed, buildAlbumRow, getRandomItem } from "./utils/randomAlbumUtils.js";
 
 import { CommandContext } from "../../utils/parseCommand.js";
 import { PlayLog } from "../../interfaces/PlayLog.js";
@@ -8,7 +9,6 @@ import { addPlayLog } from "../../services/plays.api.js";
 import { getDropdownValue } from "../../utils/discordToDropdown.js";
 import { getUnplayedVinyls } from "../../services/vinyls.api.js";
 import { getUserByName } from "../../services/users.api.js";
-import { buildAlbumEmbed, buildAlbumRow, getRandomItem, attachRandomAlbumCollector } from "./utils/randomAlbumUtils.js";
 
 export const ProcessRandomUnplayedAlbum = async (message: Message, context: CommandContext) => {
   try {
@@ -19,7 +19,7 @@ export const ProcessRandomUnplayedAlbum = async (message: Message, context: Comm
       return;
     }
 
-    const currentUserName = getDropdownValue(message.author.username, message.author.id, message.author.globalName);
+    const currentUserName = getDropdownValue(message.author.username, message.author.id);
     const targetUser: User | null = await getUserByName(currentUserName);
 
     if (!targetUser) {

@@ -10,25 +10,7 @@ describe("getDropdownValue", () => {
     vi.clearAllMocks();
   });
 
-  it("should return the mapped value for a known user", async () => {
-    const mockMapping = { "discordUser123": "Roy" };
-    vi.spyOn(fs, 'readFileSync').mockReturnValue(JSON.stringify(mockMapping));
-    
-    const { getDropdownValue } = await import("../../src/utils/discordToDropdown.js");
-
-    expect(getDropdownValue("discordUser123")).toBe("Roy");
-  });
-
-  it("should return 'Unknown' for a user not in the mapping", async () => {
-    const mockMapping = { "discordUser123": "Roy" };
-    vi.spyOn(fs, 'readFileSync').mockReturnValue(JSON.stringify(mockMapping));
-
-    const { getDropdownValue } = await import("../../src/utils/discordToDropdown.js");
-
-    expect(getDropdownValue("SomeoneElse")).toBe("Unknown");
-  });
-
-  it("should return displayName when mapping entry is object-based", async () => {
+  it("should return the mapped value for a known discordId", async () => {
     const mockMapping = {
       geminni: {
         displayName: "Anna",
@@ -39,10 +21,24 @@ describe("getDropdownValue", () => {
 
     const { getDropdownValue } = await import("../../src/utils/discordToDropdown.js");
 
-    expect(getDropdownValue("geminni")).toBe("Anna");
+    expect(getDropdownValue("geminni", "123456")).toBe("Anna");
   });
 
-  it("should prioritize discordId over username lookup", async () => {
+  it("should fall back to the username when no matching discordId is provided", async () => {
+    const mockMapping = {
+      geminni: {
+        displayName: "Anna",
+        discordId: "123456",
+      },
+    };
+    vi.spyOn(fs, 'readFileSync').mockReturnValue(JSON.stringify(mockMapping));
+
+    const { getDropdownValue } = await import("../../src/utils/discordToDropdown.js");
+
+    expect(getDropdownValue("geminni", "999999")).toBe("Anna");
+  });
+
+  it("should return 'Unknown' when the mapping is not found by discordId", async () => {
     const mockMapping = {
       roymond: {
         displayName: "Roy",

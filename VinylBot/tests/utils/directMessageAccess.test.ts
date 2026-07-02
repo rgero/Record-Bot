@@ -10,37 +10,10 @@ describe("isAuthorizedDirectMessageUser", () => {
     vi.clearAllMocks();
   });
 
-  it("authorizes a known username from a legacy string mapping", async () => {
-    vi.spyOn(fs, "readFileSync").mockReturnValue(JSON.stringify({ ".roymond": "Roy" }));
-    const { isAuthorizedDirectMessageUser } = await import("../../src/utils/directMessageAccess.js");
-
-    expect(
-      isAuthorizedDirectMessageUser({
-        id: "123",
-        username: "roymond",
-        globalName: null,
-      })
-    ).toBe(true);
-  });
-
-  it("authorizes when the Discord global name matches", async () => {
-    vi.spyOn(fs, "readFileSync").mockReturnValue(JSON.stringify({ geminni: "Anna" }));
-    const { isAuthorizedDirectMessageUser } = await import("../../src/utils/directMessageAccess.js");
-
-    expect(
-      isAuthorizedDirectMessageUser({
-        id: "123",
-        username: "somethingElse",
-        globalName: "geminni",
-      })
-    ).toBe(true);
-  });
-
   it("authorizes by stable discordId when provided", async () => {
     vi.spyOn(fs, "readFileSync").mockReturnValue(
       JSON.stringify({
         geminni: {
-          displayName: "Anna",
           discordId: "999",
         },
       })
@@ -56,8 +29,27 @@ describe("isAuthorizedDirectMessageUser", () => {
     ).toBe(true);
   });
 
+  it("does not authorize by username when discordId is not matched", async () => {
+    vi.spyOn(fs, "readFileSync").mockReturnValue(
+      JSON.stringify({
+        geminni: {
+          discordId: "999",
+        },
+      })
+    );
+    const { isAuthorizedDirectMessageUser } = await import("../../src/utils/directMessageAccess.js");
+
+    expect(
+      isAuthorizedDirectMessageUser({
+        id: "123",
+        username: "geminni",
+        globalName: null,
+      })
+    ).toBe(false);
+  });
+
   it("returns false when the user is not in mapping", async () => {
-    vi.spyOn(fs, "readFileSync").mockReturnValue(JSON.stringify({ geminni: "Anna" }));
+    vi.spyOn(fs, "readFileSync").mockReturnValue(JSON.stringify({ geminni: { discordId: "999" } }));
     const { isAuthorizedDirectMessageUser } = await import("../../src/utils/directMessageAccess.js");
 
     expect(
