@@ -27,7 +27,7 @@ export const ProcessRandomUnplayedAlbum = async (message: Message, context: Comm
     }
 
     const vinyls = await getUnplayedVinyls(targetUser.id, query || undefined);
-    const titleSuffix = "from Your Unplayed";
+    const titleSuffix = "Random Pick from Your Unplayed";
 
     if (!vinyls || vinyls.length === 0) {
       const msg = query
