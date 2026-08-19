@@ -1,3 +1,19 @@
+import {
+  addVinyl,
+  getArtistVinylCountByUserId,
+  getArtistVinylCounts,
+  getFullVinylsByQuery,
+  getUnplayedVinylCounts,
+  getUnplayedVinyls,
+  getVinylID,
+  getVinyls,
+  getVinylsByPlayCount,
+  getVinylsByQuery,
+  getVinylsBySearchQuery,
+  getVinylsByTags,
+  getVinylsLikedByUserID,
+  haveVinyl,
+} from '../../src/services/vinyls.api';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { fromMock, rpcMock, sortItemsMock } = vi.hoisted(() => ({
@@ -17,22 +33,7 @@ vi.mock('../../src/utils/sortItems.js', () => ({
   sortItems: sortItemsMock,
 }));
 
-import {
-  addVinyl,
-  getArtistVinylCountByUserId,
-  getArtistVinylCounts,
-  getFullVinylsByQuery,
-  getUnplayedVinylCounts,
-  getUnplayedVinyls,
-  getVinylID,
-  getVinyls,
-  getVinylsByPlayCount,
-  getVinylsByQuery,
-  getVinylsBySearchQuery,
-  getVinylsByTags,
-  getVinylsLikedByUserID,
-  haveVinyl,
-} from '../../src/services/vinyls.api';
+
 
 const makeAwaitableBuilder = (result: any) => {
   const builder: any = {
@@ -70,7 +71,7 @@ describe('vinyls.api', () => {
     expect(builder.contains).toHaveBeenCalledWith('owners', ['u1']);
     expect(builder.or).toHaveBeenCalledWith('artist.wfts.rise against,album.wfts.rise against');
     expect(builder.contains).toHaveBeenCalledWith('tags', ['punk']);
-    expect(result).toEqual([{ artist: 'A', album: 'B' }]);
+    expect(result).toEqual([{ artist: 'A', album: 'B', playCount: 0 }]);
   });
 
   it('getVinylID returns id from maybeSingle', async () => {
@@ -174,14 +175,15 @@ describe('vinyls.api', () => {
     expect(result).toEqual([{ title: 'Alice', count: 3 }]);
   });
 
-  it('getVinyls returns ordered vinyl list', async () => {
-    const builder = makeAwaitableBuilder({ data: [{ artist: 'A', album: 'B' }], error: null });
+  it('getVinyls calculates playCount from playlogs', async () => {
+    const builder = makeAwaitableBuilder({ data: [{ artist: 'A', album: 'B', playCount: 99, playlogs: [{ count: 3 }] }], error: null });
     fromMock.mockReturnValue(builder);
 
     const result = await getVinyls();
 
+    expect(builder.select).toHaveBeenCalledWith('*, playlogs(count)');
     expect(builder.order).toHaveBeenCalledWith('artist', { ascending: true });
-    expect(result).toEqual([{ artist: 'A', album: 'B' }]);
+    expect(result).toEqual([{ artist: 'A', album: 'B', playCount: 3 }]);
   });
 
   it('getVinyls throws when query fails', async () => {
@@ -199,7 +201,7 @@ describe('vinyls.api', () => {
     const result = await getVinylsLikedByUserID('u1');
 
     expect(builder.contains).toHaveBeenCalledWith('likedBy', ['u1']);
-    expect(result).toEqual([{ artist: 'A', album: 'B' }]);
+    expect(result).toEqual([{ artist: 'A', album: 'B', playCount: 0 }]);
   });
 
   it('getVinylsByQuery applies user owner filter', async () => {
@@ -209,7 +211,7 @@ describe('vinyls.api', () => {
     const result = await getVinylsByQuery({ type: 'user', term: 'u1' });
 
     expect(builder.contains).toHaveBeenCalledWith('owners', ['u1']);
-    expect(result).toEqual([{ artist: 'A', album: 'B' }]);
+    expect(result).toEqual([{ artist: 'A', album: 'B', playCount: 0 }]);
   });
 
   it('getVinylsByQuery applies full-text search filter', async () => {
@@ -219,7 +221,7 @@ describe('vinyls.api', () => {
     const result = await getVinylsByQuery({ type: 'search', term: 'rise against' });
 
     expect(builder.or).toHaveBeenCalledWith('artist.wfts.rise against,album.wfts.rise against');
-    expect(result).toEqual([{ artist: 'A', album: 'B' }]);
+    expect(result).toEqual([{ artist: 'A', album: 'B', playCount: 0 }]);
   });
 
   it('getFullVinylsByQuery applies combined full-text query', async () => {
@@ -229,7 +231,7 @@ describe('vinyls.api', () => {
     const result = await getFullVinylsByQuery('rise against');
 
     expect(builder.or).toHaveBeenCalledWith('artist.wfts.rise against,album.wfts.rise against');
-    expect(result).toEqual([{ artist: 'A', album: 'B' }]);
+    expect(result).toEqual([{ artist: 'A', album: 'B', playCount: 0 }]);
   });
 
   it('getVinylsByTags trims and lowercases tags before query', async () => {
@@ -239,7 +241,7 @@ describe('vinyls.api', () => {
     const result = await getVinylsByTags(['  Punk ', 'InDie']);
 
     expect(builder.contains).toHaveBeenCalledWith('tags', ['punk', 'indie']);
-    expect(result).toEqual([{ artist: 'A', album: 'B' }]);
+    expect(result).toEqual([{ artist: 'A', album: 'B', playCount: 0 }]);
   });
 
   it('getArtistVinylCounts aggregates and sorts by descending count', async () => {
@@ -257,11 +259,11 @@ describe('vinyls.api', () => {
     ]);
   });
 
-  it('getVinylsByPlayCount maps title and fallback zero play count', async () => {
+  it('getVinylsByPlayCount calculates and sorts by playlogs count', async () => {
     const builder = makeAwaitableBuilder({
       data: [
-        { artist: 'A', album: 'X', playCount: 5 },
-        { artist: 'B', album: 'Y' },
+        { artist: 'A', album: 'X', playCount: 99, playlogs: [{ count: 5 }] },
+        { artist: 'B', album: 'Y', playlogs: [] },
       ],
       error: null,
     });
@@ -269,7 +271,6 @@ describe('vinyls.api', () => {
 
     const result = await getVinylsByPlayCount();
 
-    expect(builder.order).toHaveBeenCalledWith('playCount', { ascending: false });
     expect(result).toEqual([
       { title: 'A - X', count: 5 },
       { title: 'B - Y', count: 0 },
