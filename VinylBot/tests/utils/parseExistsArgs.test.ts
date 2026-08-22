@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-
 import { parseExistsArgs, tokenizeExistsArgs } from "../../src/utils/parseExistsArgs.js";
 
 describe("tokenizeExistsArgs", () => {
@@ -30,6 +29,14 @@ describe("parseExistsArgs", () => {
     expect(result).toEqual({
       ok: true,
       input: { source: "flags", artist: "bbno$", album: "bbno$" },
+    });
+  });
+
+  it("accepts em-dash flag prefixes copied from Discord", () => {
+    const result = parseExistsArgs("!exists —artist Eiffel 65 —album Europop");
+    expect(result).toEqual({
+      ok: true,
+      input: { source: "flags", artist: "Eiffel 65", album: "Europop" },
     });
   });
 

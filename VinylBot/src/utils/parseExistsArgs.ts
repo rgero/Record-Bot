@@ -65,7 +65,8 @@ const parseArtistAlbumFlags = (text: string): ParseExistsArgsResult => {
   };
 
   for (const token of tokens) {
-    const lower = token.toLowerCase();
+    const normalizedToken = token.startsWith("—") ? `--${token.slice(1)}` : token;
+    const lower = normalizedToken.toLowerCase();
     if (lower === "--artist" || lower === "-a") {
       flush();
       active = "artist";
