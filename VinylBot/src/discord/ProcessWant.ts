@@ -18,7 +18,12 @@ export const ProcessWant = async (message: Message) => {
   if (!parsed) return;
 
   try {
-    await message.suppressEmbeds(true);
+
+    if (message.guildId)
+    {
+      await message.suppressEmbeds(true);
+    }
+
     const [spotifyData, userID] = await Promise.all([
       getSpotifyData(parsed),
       getUserByName(getDropdownValue(message.author?.username || "Unknown", message.author.id))

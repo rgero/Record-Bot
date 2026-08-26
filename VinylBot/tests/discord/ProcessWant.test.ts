@@ -85,6 +85,7 @@ describe("ProcessWant", () => {
     const message = createMessage(
       "!want https://open.spotify.com/album/abc123 personal notes"
     );
+    message.guildId = "guild_123" as any;
 
     vi.mocked(addWantedItem).mockResolvedValue("ADDED");
 
@@ -116,6 +117,19 @@ describe("ProcessWant", () => {
         expect.objectContaining({ name: "Notes", value: "personal notes" }),
       ])
     );
+  });
+
+  it("processes a direct message without suppressing embeds", async () => {
+    const message = createMessage("!want https://open.spotify.com/album/abc123");
+    vi.mocked(addWantedItem).mockResolvedValue("ADDED");
+
+    await ProcessWant(message as unknown as Message);
+
+    expect(message.suppressEmbeds).not.toHaveBeenCalled();
+    expect(addWantedItem).toHaveBeenCalledWith(expect.objectContaining({
+      artist: "Some Artist",
+      album: "Some Album",
+    }));
   });
 
   it("returns a reply warning if user is not found in system", async () => {

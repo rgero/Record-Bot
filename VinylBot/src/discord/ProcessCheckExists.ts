@@ -31,7 +31,12 @@ export const ProcessCheckExists = async (message: Message) => {
     let albumName = "";
 
     if (parsed.input.source === "spotify") {
-      await message.suppressEmbeds(true).catch(() => {});
+
+      if (message.guildId)
+      {
+        await message.suppressEmbeds(true);
+      }
+      
       const spotifyData = await getSpotifyData(parsed.input.url);
       artists = spotifyData.artists;
       albumName = spotifyData.albumName;
