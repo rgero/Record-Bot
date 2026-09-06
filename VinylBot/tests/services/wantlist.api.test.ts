@@ -1,3 +1,4 @@
+import { addWantedItem, getWantList } from '../../src/services/wantlist.api';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { fromMock } = vi.hoisted(() => ({
@@ -10,7 +11,7 @@ vi.mock('../../src/services/supabase.js', () => ({
   },
 }));
 
-import { addWantedItem, getWantList } from '../../src/services/wantlist.api';
+
 
 describe('wantlist.api', () => {
   beforeEach(() => {
@@ -65,6 +66,21 @@ describe('wantlist.api', () => {
 
     expect(result).toBe('ADDED');
     expect(insertMock).toHaveBeenCalledWith([{ artist: 'A', album: 'B', searcher: ['u1'] }]);
+  });
+
+  it('addWantedItem keeps album length metadata in the insert payload', async () => {
+    const insertMock = vi.fn().mockResolvedValue({ error: null });
+    fromMock.mockReturnValue({ insert: insertMock });
+
+    const result = await addWantedItem({
+      artist: 'A',
+      album: 'B',
+      searcher: ['u1'],
+      length: 42,
+    } as any);
+
+    expect(result).toBe('ADDED');
+    expect(insertMock).toHaveBeenCalledWith([{ artist: 'A', album: 'B', searcher: ['u1'], length: 42 }]);
   });
 
   it('addWantedItem returns DUPLICATE for unique violation', async () => {

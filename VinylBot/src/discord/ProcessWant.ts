@@ -33,7 +33,7 @@ export const ProcessWant = async (message: Message) => {
       return message.reply("⚠️ User not found in system.");
     }
 
-    const { artists, albumName, albumArt, releaseDate, totalTracks } = spotifyData;
+    const { artists, albumName, albumArt, releaseDate, totalTracks, length } = spotifyData;
 
     // Check if the album already exists in the vinyls table.
     const exists = await haveVinyl({artist: artists, album: albumName});
@@ -41,7 +41,7 @@ export const ProcessWant = async (message: Message) => {
       return message.reply("⚠️ You already own this.");
     }
 
-    const status = await addWantedItem({artist: artists, album: albumName,imageUrl: albumArt,notes,searcher: [userID.id]});
+    const status = await addWantedItem({artist: artists, album: albumName,imageUrl: albumArt, notes, searcher: [userID.id], length: length || 0});
     if (status === "ERROR") {
       return message.reply("❌ System error: Could not save to database.");
     }

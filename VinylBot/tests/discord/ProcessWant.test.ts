@@ -98,6 +98,7 @@ describe("ProcessWant", () => {
       imageUrl: "album-art.jpg",
       searcher: ["user_123"],
       notes: "personal notes",
+      length: 60,
     });
 
     const replyPayload = message.reply.mock.calls[0][0];
